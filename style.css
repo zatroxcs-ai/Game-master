@@ -1,226 +1,202 @@
-:root {
-    --primary: #2c3e50; 
-    --secondary: #34495e; 
-    --accent: #f39c12;
-    --danger: #e74c3c; 
-    --success: #27ae60; 
-    --info: #3498db;
-    --text: #ecf0f1; 
-    --bg: #121212; 
-    --panel-bg: #1e1e1e; 
-    --input-bg: #333;
-    --npc-color: #d35400; 
-    --log-bg: #000;
-    --msg-me: #2980b9; 
-    --msg-other: #444; 
-    --msg-private: #8e44ad;
-}
+/* --- NOUVELLES VARIABLES THÉMATIQUES --- */
+    :root {
+        --cr-blue-dark: #183052; /* Fond profond */
+        --cr-blue-mid: #325a8e;  /* Panneaux principaux */
+        --cr-blue-light: #4a86c7; /* Bordures claires */
+        --cr-wood-dark: #4a3018; /* Boutons inactifs */
+        --cr-wood-light: #8c5e35; /* Boutons actifs */
+        --cr-gold: #ffd700; /* Accents et texte important */
+        --cr-shadow-inset: inset 0 3px 8px rgba(0,0,0,0.6);
+        --cr-shadow-pop: 0 4px 0 rgba(0,0,0,0.4), 0 5px 10px rgba(0,0,0,0.3); /* Effet 3D */
+        --cr-border-radius: 16px;
+        --cr-text-outline: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    }
 
-body {
-    font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0;
-    background-color: var(--bg); color: var(--text);
-    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-}
+    /* --- FONDS GLOBAUX --- */
+    body {
+        /* Dégradé radial bleu style "Arène" */
+        background: radial-gradient(circle at center top, var(--cr-blue-mid) 0%, var(--cr-blue-dark) 100%) !important;
+    }
+    #gm-view, #client-view {
+        background: transparent !important;
+    }
 
-/* --- NAVIGATION --- */
-.nav-tabs { display: flex; gap: 5px; height: 100%; align-items: flex-end; }
-.tab-btn {
-    background: #1a252f; color: #bdc3c7; border: none;
-    padding: 10px 15px; cursor: pointer; font-weight: bold; font-size: 0.9em;
-    border-radius: 8px 8px 0 0; transition: all 0.2s; white-space: nowrap;
-    border-top: 3px solid transparent; margin-bottom: 0;
-}
-.tab-btn:hover { background: #34495e; color: white; }
-.tab-btn.active {
-    background: var(--panel-bg); color: var(--accent);
-    border-top: 3px solid var(--accent); height: 50px;
-    margin-bottom: -3px; z-index: 10;
-}
+    /* --- PANNEAUX ET CONTENEURS (PC) --- */
+    /* On donne un aspect "bloc de pierre bleue" aux zones principales */
+    .list-panel, .detail-panel, .map-sidebar, .map-controls, .chat-input-area, #gmChatTitle, .log-container {
+        background: var(--cr-blue-dark) !important;
+        border: 3px solid var(--cr-blue-mid) !important;
+        box-shadow: var(--cr-shadow-inset) !important;
+        border-radius: 8px !important;
+    }
+    .detail-panel, .view-section.active .split-layout {
+        padding: 15px !important;
+        gap: 10px;
+    }
+    /* L'entête du MJ ressemble plus à un ponton en bois */
+    header {
+        background: linear-gradient(to bottom, #3a2410, #2b1a0a) !important;
+        border-bottom: 4px solid #1a0f05 !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+        z-index: 20;
+    }
 
-/* --- LAYOUT --- */
-.view-section { display: none; flex: 1; height: calc(100vh - 60px); width: 100%; position: relative; }
-.view-section.active { display: flex; }
+    /* --- BOUTONS DE NAVIGATION (ONGLETS PC) --- */
+    /* Aspect "gros bouton en bois" */
+    .tab-btn {
+        background: linear-gradient(to bottom, var(--cr-wood-light), var(--cr-wood-dark)) !important;
+        border: 2px solid #1a0f05 !important;
+        border-bottom: none !important;
+        border-radius: 10px 10px 0 0 !important;
+        color: #e3d2b4 !important;
+        text-shadow: 1px 1px 2px #000 !important;
+        box-shadow: inset 0 2px 2px rgba(255,255,255,0.2);
+        margin-right: 2px !important;
+    }
+    .tab-btn:hover { background: linear-gradient(to bottom, #9e6b3d, #5c3d21) !important; }
+    /* L'onglet actif ressort et s'allume */
+    .tab-btn.active {
+        background: linear-gradient(to bottom, var(--cr-blue-light), var(--cr-blue-mid)) !important;
+        color: var(--cr-gold) !important;
+        border-color: var(--cr-blue-light) !important;
+        transform: translateY(-4px);
+        height: 54px !important;
+        box-shadow: 0 -2px 10px rgba(74, 134, 199, 0.5) !important;
+        z-index: 25 !important;
+    }
 
-.split-layout { display: flex; height: 100%; width: 100%; }
-.list-panel { flex: 0 0 300px; border-right: 1px solid #444; padding: 15px; overflow-y: auto; background: #141414; }
-.detail-panel { flex: 1; padding: 25px; overflow-y: auto; background: var(--panel-bg); }
+    /* --- BOUTONS D'ACTION (SAUVER, ETC.) --- */
+    /* Effet 3D "cliquable" très marqué */
+    .action-btn {
+        background: linear-gradient(to bottom, #546e7a, #37474f) !important;
+        border: 1px solid #263238 !important;
+        border-radius: 8px !important;
+        box-shadow: var(--cr-shadow-pop) !important;
+        transition: all 0.1s !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .action-btn:active {
+        transform: translateY(4px) !important; /* Le bouton s'enfonce */
+        box-shadow: none !important;
+    }
+    /* Couleurs spécifiques pour Sauver/Reset */
+    .save-btn { background: linear-gradient(to bottom, #2ecc71, #219653) !important; box-shadow: 0 4px 0 #145a32, 0 5px 10px rgba(0,0,0,0.3) !important; }
+    .reset-btn { background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; box-shadow: 0 4px 0 #7b241c, 0 5px 10px rgba(0,0,0,0.3) !important; }
 
-/* --- ITEMS --- */
-.list-card-item {
-    background: #2c3e50; padding: 10px; margin-bottom: 8px;
-    border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap:10px;
-    border-left: 4px solid transparent; transition: background 0.2s;
-}
-.list-card-item:hover { background: #34495e; }
-.list-card-item.selected { background: #34495e; border-left-color: var(--accent); }
-.list-card-item.npc { border-left-color: var(--npc-color); }
+    /* --- FORMULAIRES ET INPUTS --- */
+    /* Aspect "creusé" dans l'interface */
+    input, select, textarea, .visual-inv-box {
+        background: rgba(0,0,0,0.4) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-radius: 10px !important;
+        box-shadow: inset 0 3px 5px rgba(0,0,0,0.5) !important;
+        color: #fff !important;
+    }
+    input:focus, textarea:focus, select:focus {
+        border-color: var(--cr-gold) !important;
+        background: rgba(0,0,0,0.6) !important;
+    }
+    h3 {
+        color: var(--cr-gold) !important;
+        text-shadow: var(--cr-text-outline) !important;
+        border-bottom: 2px solid var(--cr-blue-mid) !important;
+    }
 
-.avatar-circle { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #555; background: #000; }
-.btn-qr { background: #8e44ad; border:none; color:white; padding:5px 10px; border-radius:4px; cursor:pointer; margin-left:auto; }
+    /* --- LISTES ET CARTES (ITEMS) --- */
+    /* Plaques individuelles avec bords arrondis */
+    .list-card-item {
+        background: linear-gradient(to right, rgba(40, 65, 100, 0.9), rgba(24, 48, 82, 0.9)) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 5px rgba(0,0,0,0.3) !important;
+        margin-bottom: 10px !important;
+        backdrop-filter: blur(4px);
+    }
+    .list-card-item:hover {
+        border-color: var(--cr-blue-light) !important;
+        transform: scale(1.02);
+    }
+    .list-card-item.selected {
+        border-left: none !important; /* On enlève l'ancienne bordure */
+        border: 2px solid var(--cr-gold) !important; /* On remplace par un cadre doré */
+        background: linear-gradient(to right, rgba(100, 80, 20, 0.6), rgba(24, 48, 82, 0.9)) !important;
+    }
+    .avatar-circle {
+        border: 3px solid var(--cr-gold) !important;
+        box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+    }
 
-/* --- FORMULAIRES --- */
-h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 10px;}
-label { display: block; margin-top: 10px; font-size: 0.85em; color: #aaa; text-transform: uppercase; margin-bottom: 5px; }
-input, select, textarea { padding: 10px; border-radius: 4px; border: 1px solid #555; background-color: var(--input-bg); color: white; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+    /* ================= MOBILE VISUEL ================= */
+    /* En-tête mobile style Clash */
+    .mob-header {
+        background: linear-gradient(to bottom, var(--cr-blue-mid), var(--cr-blue-dark)) !important;
+        border-bottom: 4px solid var(--cr-wood-dark) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+    }
+    /* Onglets mobiles */
+    .mob-tab-btn {
+        background: transparent !important;
+        border-bottom: none !important;
+        font-family: 'Segoe UI Black', Roboto, sans-serif; /* Police plus grasse si dispo */
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #aaa !important;
+        text-shadow: 1px 1px 2px #000;
+    }
+    .mob-tab-btn.active {
+        color: var(--cr-gold) !important;
+        background: rgba(0,0,0,0.2) !important;
+        border-bottom: 4px solid var(--cr-gold) !important;
+    }
+    /* Cartes principales mobile (Stats, etc.) */
+    .mob-card {
+        background: rgba(24, 48, 82, 0.85) !important; /* Bleu semi-transparent */
+        border: 3px solid var(--cr-blue-light) !important;
+        border-radius: var(--cr-border-radius) !important;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.1) !important;
+        backdrop-filter: blur(10px); /* Effet verre dépoli */
+    }
+    /* Gros titres et valeurs sur mobile */
+    #mobName, .mob-val {
+        text-shadow: var(--cr-text-outline) !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px;
+    }
+    #mobImg {
+        border: 5px solid var(--cr-gold) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.6) !important;
+    }
 
-.action-btn { background-color: #444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight:bold; margin-right:5px;}
-.save-btn { background-color: var(--success); }
-.reset-btn { background-color: var(--danger); }
+    /* Journal Mobile style "Parchemin magique" */
+    .mob-journal-entry {
+        background: linear-gradient(135deg, #2c3e50, #1a252f) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-left: 6px solid var(--info) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.3) !important;
+    }
+    .mob-journal-title {
+        color: var(--cr-gold) !important;
+    }
+    
+    /* Modales */
+    .modal-content {
+        background: var(--cr-blue-dark) !important;
+        border: 4px solid var(--cr-blue-light) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8) !important;
+    }
 
-/* --- ATLAS & MAP --- */
-.map-sidebar { width: 220px; background: #151515; border-right: 1px solid #444; display: flex; flex-direction: column; }
-.map-list { flex: 1; overflow-y: auto; }
-.map-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #333; font-size: 0.9em; color: #aaa; display:flex; align-items:center; gap:10px; }
-.map-item:hover { background: #222; color: white; }
-.map-item.active { background: var(--primary); color: white; border-left: 4px solid var(--accent); }
-.map-view-area { flex: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-.map-controls { padding: 10px; border-top: 1px solid #333; background: #111; display: flex; flex-direction: column; gap: 5px; }
-
-.full-map-container { width: 100%; height: 100%; position: relative; display: flex; justify-content: center; align-items: center; }
-.world-map { width: 100%; height: 100%; object-fit: contain; }
-
-.map-marker {
-    position: absolute; width: 40px; height: 40px; border-radius: 50%;
-    border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    transform: translate(-50%, -50%); cursor: pointer; transition: all 0.3s ease; z-index: 10;
-    background-size: cover; background-position: center; background-color: #000;
-}
-.map-marker:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 20; border-color: var(--accent); }
-.map-marker .tooltip {
-    visibility: hidden; background: rgba(0,0,0,0.8); color: #fff;
-    text-align: center; border-radius: 4px; padding: 5px;
-    position: absolute; bottom: 110%; left: 50%; 
-    transform: translateX(-50%); white-space: nowrap; font-size: 0.8em; pointer-events: none;
-}
-.map-marker:hover .tooltip { visibility: visible; }
-
-/* --- CHAT --- */
-.chat-container { display: flex; flex-direction: column; height: 100%; background: #111; }
-.chat-feed { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-.chat-input-area { background: #222; padding: 10px; display: flex; gap: 10px; align-items: center; border-top: 1px solid #444; }
-.msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.95em; position: relative; word-wrap: break-word; }
-.msg-bubble.left { align-self: flex-start; background: var(--msg-other); border-bottom-left-radius: 2px; }
-.msg-bubble.right { align-self: flex-end; background: var(--msg-me); border-bottom-right-radius: 2px; }
-.msg-bubble.private { border: 1px solid var(--msg-private); }
-.private-tag { font-size: 0.7em; background: var(--msg-private); padding: 2px 4px; border-radius: 3px; color: white; margin-right: 5px; }
-
-/* --- MOBILE --- */
-#client-view { display: none; height: 100vh; width: 100%; flex-direction: column; background: #000; }
-.mob-header { background-color: var(--primary); height: 60px; flex-shrink: 0; display: flex; justify-content: center; align-items: flex-end; border-bottom: 3px solid var(--accent); }
-.mob-tab-btn { flex: 1; border-radius: 0; margin: 0; text-align: center; height: 100%; border-top:none; border-bottom: 3px solid transparent; display: flex; align-items: center; justify-content: center; }
-.mob-tab-btn.active { background: #222; border-bottom: 3px solid var(--accent); color: var(--accent); border-top: none; }
-.mob-container { display: none; flex-direction: column; height: 100%; width: 100%; overflow: hidden; }
-.mob-container.active { display: flex; }
-.mob-scroll-content { padding: 20px; overflow-y: auto; height: 100%; width: 100%; box-sizing: border-box; }
-.mob-card { background: #222; padding: 15px; border-radius: 10px; border: 1px solid #444; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
-.mob-val { font-size: 2.5em; font-weight: bold; color: var(--accent); }
-.mob-label { color: #888; font-size: 0.9em; text-transform: uppercase; }
-
-.mob-journal-entry { background: #1a1a1a; border-left: 3px solid var(--info); padding: 15px; margin-bottom: 15px; border-radius: 0 8px 8px 0; text-align: left; }
-.mob-journal-date { font-size: 0.8em; color: var(--accent); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-.mob-journal-title { font-size: 1.2em; font-weight: bold; color: white; margin-bottom: 10px; }
-.mob-journal-content { color: #ccc; line-height: 1.5; font-family: serif; font-size: 1.05em; white-space: pre-wrap; }
-
-/* --- HEADER MJ --- */
-header { background-color: var(--primary); padding: 0 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--accent); height: 60px; flex-shrink: 0; overflow-x: auto; }
-.controls-area { display: flex; align-items: center; gap: 10px; margin-left: 10px;}
-
-/* --- MODALS & EXTRAS --- */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; justify-content: center; align-items: center; }
-.modal-content { background: var(--panel-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--accent); max-width: 500px; width: 90%; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
-.close-modal { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 1.2em; }
-
-/* --- CARDS GRID --- */
-.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; padding: 10px; }
-.grid-card { cursor: pointer; text-align: center; padding: 5px; border: 1px solid transparent; border-radius: 5px; position: relative; }
-.grid-card:hover { border-color: var(--accent); background: #333; }
-.grid-card img { width: 100%; display: block; }
-
-.card-edit-btn { 
-    position: absolute; top: 2px; right: 2px; 
-    background: rgba(0,0,0,0.7); color: #fff; 
-    border: none; border-radius: 50%; width: 24px; height: 24px; 
-    font-size: 14px; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center;
-}
-.card-edit-btn:hover { background: var(--accent); }
-
-.visual-inv-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 8px; min-height: 60px; border: 1px dashed #555; }
-.cr-card-mini { width: 60px; height: 75px; cursor: pointer; position: relative; }
-.cr-card-mini img { width: 100%; height: 100%; object-fit: contain; }
-.remove-card-btn { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-
-.toast { position: fixed; bottom: 20px; right: 20px; background: var(--success); color: white; padding: 10px 20px; border-radius: 5px; display: none; z-index: 1000; }
-.log-entry { margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 5px; color: #ddd; }
-.relation-target { background: #252525; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; align-items: center; gap: 10px; }
-
-/* --- CSS ADDITIONNEL (TOOLTIP DECK) --- */
-.cr-card-mini .card-tooltip {
-    visibility: hidden;
-    opacity: 0;
-    position: absolute;
-    bottom: 105%; left: 50%; transform: translateX(-50%);
-    width: 200px;
-    background: rgba(0, 0, 0, 0.95);
-    border: 1px solid var(--accent);
-    border-radius: 8px;
-    padding: 10px;
-    z-index: 9999;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    pointer-events: none; /* Permet de cliquer au travers */
-    transition: opacity 0.2s;
-    text-align: center;
-}	
-
-/* La flèche du bas de la bulle */
-.cr-card-mini .card-tooltip::after {
-    content: "";
-    position: absolute; top: 100%; left: 50%; margin-left: -5px;
-    border-width: 5px; border-style: solid;
-    border-color: var(--accent) transparent transparent transparent;
-}
-
-/* Afficher au survol */
-.cr-card-mini:hover .card-tooltip {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* Style du contenu */
-.tooltip-header { color: var(--accent); font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid #444; padding-bottom: 3px; }
-.tooltip-stats { display: flex; justify-content: space-around; font-size: 0.85em; margin-bottom: 5px; color: #ddd; }
-.tooltip-desc { font-size: 0.8em; font-style: italic; color: #aaa; line-height: 1.3; text-align: justify;}
-
-/* --- CSS ADDITIONNEL (RELATIONS VISUELLES) --- */
-/* Modifie légèrement le conteneur existant pour l'alignement */
-.relation-target {
-    padding-left: 0 !important; /* On enlève le padding à gauche pour coller la barre */
-    overflow: hidden; /* Pour que la barre suive les coins arrondis */
-    gap: 15px; /* Un peu plus d'espace entre les éléments */
-}
-
-/* La nouvelle barre de statut colorée */
-.rel-status-bar {
-    width: 12px;
-    align-self: stretch; /* Prend toute la hauteur */
-    background: #444; /* Couleur par défaut (Inconnu) */
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-}
-
-/* Les couleurs selon le statut */
-/* Vert pour Amical */
-.rel-status-bar.status-Amical { background: #27ae60; box-shadow: 2px 0 10px rgba(39, 174, 96, 0.3); }
-/* Gris/Bleu neutre */
-.rel-status-bar.status-Neutre { background: #7f8c8d; }
-/* Rouge vif pour Hostile */
-.rel-status-bar.status-Hostile { background: #c0392b; box-shadow: 2px 0 10px rgba(192, 57, 43, 0.4); }
-/* Bleu royal brillant pour Allié */
-.rel-status-bar.status-Allie { background: #3498db; box-shadow: 2px 0 15px rgba(52, 152, 219, 0.5); border-right: 2px solid #fff; }
-
-/* Ajustement des champs pour faire plus propre */
-.relation-target select { width: auto; flex: 1; cursor: pointer; font-weight: bold;}
-.relation-target input { flex: 2; }
-.relation-target b { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* --- CHAT BULLES --- */
+    .msg-bubble {
+        box-shadow: 0 3px 5px rgba(0,0,0,0.3) !important;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .msg-bubble.right { background: linear-gradient(to bottom left, #2980b9, #1c5a85) !important; }
+    .msg-bubble.left { background: linear-gradient(to bottom right, #444, #333) !important; }
 
 /* ================= VISUAL EFFECTS (Clash Style) ================= */
 
