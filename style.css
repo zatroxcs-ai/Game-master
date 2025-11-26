@@ -1,259 +1,254 @@
-/* --- NOUVELLES VARIABLES THÉMATIQUES --- */
-    :root {
-        --cr-blue-dark: #183052; /* Fond profond */
-        --cr-blue-mid: #325a8e;  /* Panneaux principaux */
-        --cr-blue-light: #4a86c7; /* Bordures claires */
-        --cr-wood-dark: #4a3018; /* Boutons inactifs */
-        --cr-wood-light: #8c5e35; /* Boutons actifs */
-        --cr-gold: #ffd700; /* Accents et texte important */
-        --cr-shadow-inset: inset 0 3px 8px rgba(0,0,0,0.6);
-        --cr-shadow-pop: 0 4px 0 rgba(0,0,0,0.4), 0 5px 10px rgba(0,0,0,0.3); /* Effet 3D */
-        --cr-border-radius: 16px;
-        --cr-text-outline: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-    }
+/* ============================================================
+   THEME: CLASH ROYALE ULTIMATE
+   ============================================================ */
 
-    /* --- FONDS GLOBAUX --- */
-    body {
-        /* Dégradé radial bleu style "Arène" */
-        background: radial-gradient(circle at center top, var(--cr-blue-mid) 0%, var(--cr-blue-dark) 100%) !important;
-    }
-    #gm-view, #client-view {
-        background: transparent !important;
-    }
-
-    /* --- PANNEAUX ET CONTENEURS (PC) --- */
-    /* On donne un aspect "bloc de pierre bleue" aux zones principales */
-    .list-panel, .detail-panel, .map-sidebar, .map-controls, .chat-input-area, #gmChatTitle, .log-container {
-        background: var(--cr-blue-dark) !important;
-        border: 3px solid var(--cr-blue-mid) !important;
-        box-shadow: var(--cr-shadow-inset) !important;
-        border-radius: 8px !important;
-    }
-    .detail-panel, .view-section.active .split-layout {
-        padding: 15px !important;
-        gap: 10px;
-    }
-    /* L'entête du MJ ressemble plus à un ponton en bois */
-    header {
-        background: linear-gradient(to bottom, #3a2410, #2b1a0a) !important;
-        border-bottom: 4px solid #1a0f05 !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
-        z-index: 20;
-    }
-
-    /* --- BOUTONS DE NAVIGATION (ONGLETS PC) --- */
-    /* Aspect "gros bouton en bois" */
-    .tab-btn {
-        background: linear-gradient(to bottom, var(--cr-wood-light), var(--cr-wood-dark)) !important;
-        border: 2px solid #1a0f05 !important;
-        border-bottom: none !important;
-        border-radius: 10px 10px 0 0 !important;
-        color: #e3d2b4 !important;
-        text-shadow: 1px 1px 2px #000 !important;
-        box-shadow: inset 0 2px 2px rgba(255,255,255,0.2);
-        margin-right: 2px !important;
-    }
-    .tab-btn:hover { background: linear-gradient(to bottom, #9e6b3d, #5c3d21) !important; }
-    /* L'onglet actif ressort et s'allume */
-    .tab-btn.active {
-        background: linear-gradient(to bottom, var(--cr-blue-light), var(--cr-blue-mid)) !important;
-        color: var(--cr-gold) !important;
-        border-color: var(--cr-blue-light) !important;
-        transform: translateY(-4px);
-        height: 54px !important;
-        box-shadow: 0 -2px 10px rgba(74, 134, 199, 0.5) !important;
-        z-index: 25 !important;
-    }
-
-    /* --- BOUTONS D'ACTION (SAUVER, ETC.) --- */
-    /* Effet 3D "cliquable" très marqué */
-    .action-btn {
-        background: linear-gradient(to bottom, #546e7a, #37474f) !important;
-        border: 1px solid #263238 !important;
-        border-radius: 8px !important;
-        box-shadow: var(--cr-shadow-pop) !important;
-        transition: all 0.1s !important;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
-        font-weight: 800 !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .action-btn:active {
-        transform: translateY(4px) !important; /* Le bouton s'enfonce */
-        box-shadow: none !important;
-    }
-    /* Couleurs spécifiques pour Sauver/Reset */
-    .save-btn { background: linear-gradient(to bottom, #2ecc71, #219653) !important; box-shadow: 0 4px 0 #145a32, 0 5px 10px rgba(0,0,0,0.3) !important; }
-    .reset-btn { background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; box-shadow: 0 4px 0 #7b241c, 0 5px 10px rgba(0,0,0,0.3) !important; }
-
-    /* --- FORMULAIRES ET INPUTS --- */
-    /* Aspect "creusé" dans l'interface */
-    input, select, textarea, .visual-inv-box {
-        background: rgba(0,0,0,0.4) !important;
-        border: 2px solid var(--cr-blue-mid) !important;
-        border-radius: 10px !important;
-        box-shadow: inset 0 3px 5px rgba(0,0,0,0.5) !important;
-        color: #fff !important;
-    }
-    input:focus, textarea:focus, select:focus {
-        border-color: var(--cr-gold) !important;
-        background: rgba(0,0,0,0.6) !important;
-    }
-    h3 {
-        color: var(--cr-gold) !important;
-        text-shadow: var(--cr-text-outline) !important;
-        border-bottom: 2px solid var(--cr-blue-mid) !important;
-    }
-
-    /* --- LISTES ET CARTES (ITEMS) --- */
-    /* Plaques individuelles avec bords arrondis */
-    .list-card-item {
-        background: linear-gradient(to right, rgba(40, 65, 100, 0.9), rgba(24, 48, 82, 0.9)) !important;
-        border: 2px solid var(--cr-blue-mid) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 5px rgba(0,0,0,0.3) !important;
-        margin-bottom: 10px !important;
-        backdrop-filter: blur(4px);
-    }
-    .list-card-item:hover {
-        border-color: var(--cr-blue-light) !important;
-        transform: scale(1.02);
-    }
-    .list-card-item.selected {
-        border-left: none !important; /* On enlève l'ancienne bordure */
-        border: 2px solid var(--cr-gold) !important; /* On remplace par un cadre doré */
-        background: linear-gradient(to right, rgba(100, 80, 20, 0.6), rgba(24, 48, 82, 0.9)) !important;
-    }
-    .avatar-circle {
-        border: 3px solid var(--cr-gold) !important;
-        box-shadow: 0 3px 5px rgba(0,0,0,0.5);
-    }
-
-    /* ================= MOBILE VISUEL ================= */
-    /* En-tête mobile style Clash */
-    .mob-header {
-        background: linear-gradient(to bottom, var(--cr-blue-mid), var(--cr-blue-dark)) !important;
-        border-bottom: 4px solid var(--cr-wood-dark) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
-    }
-    /* Onglets mobiles */
-    .mob-tab-btn {
-        background: transparent !important;
-        border-bottom: none !important;
-        font-family: 'Segoe UI Black', Roboto, sans-serif; /* Police plus grasse si dispo */
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #aaa !important;
-        text-shadow: 1px 1px 2px #000;
-    }
-    .mob-tab-btn.active {
-        color: var(--cr-gold) !important;
-        background: rgba(0,0,0,0.2) !important;
-        border-bottom: 4px solid var(--cr-gold) !important;
-    }
-    /* Cartes principales mobile (Stats, etc.) */
-    .mob-card {
-        background: rgba(24, 48, 82, 0.85) !important; /* Bleu semi-transparent */
-        border: 3px solid var(--cr-blue-light) !important;
-        border-radius: var(--cr-border-radius) !important;
-        box-shadow: 0 8px 15px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.1) !important;
-        backdrop-filter: blur(10px); /* Effet verre dépoli */
-    }
-    /* Gros titres et valeurs sur mobile */
-    #mobName, .mob-val {
-        text-shadow: var(--cr-text-outline) !important;
-        font-weight: 900 !important;
-        letter-spacing: 1px;
-    }
-    #mobImg {
-        border: 5px solid var(--cr-gold) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.6) !important;
-    }
-
-    /* Journal Mobile style "Parchemin magique" */
-    .mob-journal-entry {
-        background: linear-gradient(135deg, #2c3e50, #1a252f) !important;
-        border: 2px solid var(--cr-blue-mid) !important;
-        border-left: 6px solid var(--info) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.3) !important;
-    }
-    .mob-journal-title {
-        color: var(--cr-gold) !important;
-    }
+:root {
+    /* Palette Clash Royale */
+    --cr-bg-blue: #345e8c; /* Fond arène */
+    --cr-bg-dark: #183052; /* Fond profond */
+    --cr-panel-bg: #253a52; /* Panneaux */
+    --cr-border-blue: #4a8bd3; /* Bordures panneaux */
     
-    /* Modales */
-    .modal-content {
-        background: var(--cr-blue-dark) !important;
-        border: 4px solid var(--cr-blue-light) !important;
-        border-radius: 20px !important;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.8) !important;
-    }
+    --cr-gold-top: #ffeebb; /* Or haut */
+    --cr-gold-main: #fcc22d; /* Or principal */
+    --cr-gold-bot: #e6940a; /* Or bas/ombre */
+    
+    --cr-btn-blue-top: #5496db;
+    --cr-btn-blue-bot: #2d5d91;
+    
+    --cr-green-top: #80e85a;
+    --cr-green-bot: #3da82b;
+    
+    --cr-red-top: #ff6b6b;
+    --cr-red-bot: #c0392b;
 
-    /* --- CHAT BULLES --- */
-    .msg-bubble {
-        box-shadow: 0 3px 5px rgba(0,0,0,0.3) !important;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .msg-bubble.right { background: linear-gradient(to bottom left, #2980b9, #1c5a85) !important; }
-    .msg-bubble.left { background: linear-gradient(to bottom right, #444, #333) !important; }
+    --cr-wood-dark: #3d2613;
+    --cr-wood-light: #754c24;
 
-/* ================= VISUAL EFFECTS (Clash Style) ================= */
-
-/* L'écran sombre qui bloque tout */
-#cr-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85); z-index: 9999;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    animation: fadeIn 0.3s ease-out;
+    /* Ombres et Textes */
+    --shadow-pop: 0 4px 0 rgba(0,0,0,0.3), 0 5px 10px rgba(0,0,0,0.4);
+    --text-stroke: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    --glass-bg: rgba(20, 30, 50, 0.95);
 }
 
-/* Le conteneur de l'effet pour centrer */
-.cr-effect-container {
-    position: relative; width: 300px; height: 400px;
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0; padding: 0;
+    background: radial-gradient(circle at 50% 0%, var(--cr-bg-blue), var(--cr-bg-dark));
+    color: white;
+    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* --- TYPOGRAPHIE --- */
+h1, h2, h3, .tab-btn, .mob-val, .action-btn, header b {
+    text-shadow: var(--text-stroke);
+    font-weight: 900 !important;
+    letter-spacing: 1px;
+}
+
+/* --- HEADER (MJ) --- */
+header {
+    background: linear-gradient(to bottom, #462f18, #2b1b0d);
+    border-bottom: 4px solid #160e06;
+    padding: 0 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    height: 60px; flex-shrink: 0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+    z-index: 100;
+}
+
+.controls-area { display: flex; align-items: center; gap: 10px; }
+
+/* --- ONGLETS (Style Boutons Menu) --- */
+.nav-tabs { display: flex; gap: 5px; height: 100%; align-items: flex-end; padding-bottom: 0; }
+
+.tab-btn {
+    background: linear-gradient(to bottom, var(--cr-wood-light), var(--cr-wood-dark));
+    color: #ccc;
+    border: 2px solid #160e06;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: transform 0.1s;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+.tab-btn:hover { filter: brightness(1.2); }
+
+.tab-btn.active {
+    background: linear-gradient(to bottom, var(--cr-btn-blue-top), var(--cr-btn-blue-bot));
+    color: white;
+    border-color: #122a45;
+    height: 50px;
+    margin-bottom: 4px; /* Lève l'onglet */
+    box-shadow: 0 -2px 10px rgba(84, 150, 219, 0.4);
+    z-index: 10;
+}
+
+/* --- ZONES DE CONTENU --- */
+.view-section { display: none; flex: 1; height: calc(100vh - 60px); width: 100%; position: relative; }
+.view-section.active { display: flex; }
+
+.split-layout { display: flex; height: 100%; width: 100%; padding: 15px; gap: 15px; box-sizing: border-box; }
+
+/* Panneaux (Liste et Détail) */
+.list-panel, .detail-panel, .map-sidebar {
+    background: var(--glass-bg);
+    border: 3px solid var(--cr-border-blue);
+    border-radius: 12px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    padding: 15px;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+}
+.list-panel { flex: 0 0 320px; }
+.detail-panel { flex: 1; }
+
+/* --- LISTES ITEMS (Joueurs, PNJ...) --- */
+.list-card-item {
+    background: linear-gradient(to right, rgba(50, 80, 120, 0.8), rgba(30, 50, 80, 0.8));
+    border: 2px solid #3d6ca5;
+    border-radius: 10px;
+    padding: 10px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: transform 0.1s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.list-card-item:hover { transform: scale(1.02); border-color: var(--cr-gold-main); }
+.list-card-item.selected { border: 2px solid var(--cr-gold-main); background: rgba(84, 150, 219, 0.3); }
+.list-card-item.npc { border-left: 6px solid var(--npc-color); }
+
+.avatar-circle {
+    width: 44px; height: 44px; border-radius: 8px;
+    border: 2px solid #000; box-shadow: 0 0 0 2px var(--cr-gold-main);
+    background: #000; object-fit: cover;
+}
+
+/* --- BOUTONS 3D --- */
+button.action-btn {
+    background: linear-gradient(to bottom, #aabec7, #5f7a85);
+    border: 2px solid #2d3d44;
+    border-radius: 8px;
+    color: white; padding: 10px 15px;
+    cursor: pointer; font-weight: bold; text-transform: uppercase;
+    box-shadow: 0 4px 0 #2d3d44, 0 5px 10px rgba(0,0,0,0.3);
+    transition: transform 0.1s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+button.action-btn:active { transform: translateY(4px); box-shadow: none; }
+
+/* Couleurs spécifiques boutons */
+button.save-btn { background: linear-gradient(to bottom, var(--cr-green-top), var(--cr-green-bot)); border-color: #1e5714; box-shadow: 0 4px 0 #1e5714, 0 5px 10px rgba(0,0,0,0.3); }
+button.reset-btn { background: linear-gradient(to bottom, var(--cr-red-top), var(--cr-red-bot)); border-color: #66120a; box-shadow: 0 4px 0 #66120a, 0 5px 10px rgba(0,0,0,0.3); }
+
+/* --- FORMULAIRES --- */
+input, select, textarea, .visual-inv-box {
+    background: rgba(0,0,0,0.4);
+    border: 2px solid #3d6ca5; border-radius: 8px;
+    padding: 10px; color: white;
+    width: 100%; box-sizing: border-box; margin-bottom: 10px;
+    font-family: inherit;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--cr-gold-main); background: rgba(0,0,0,0.6); }
+h3 { color: var(--cr-gold-main); border-bottom: 2px solid #3d6ca5; padding-bottom: 10px; margin-bottom: 15px; }
+label { color: #a0c0e0; font-size: 0.8em; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; display:block; }
+
+/* --- CARTES (Deck) --- */
+.visual-inv-box { min-height: 80px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.cr-card-mini { 
+    width: 60px; height: 72px; position: relative; cursor: pointer; 
+    background: #111; border-radius: 4px; overflow: visible;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5); border: 1px solid #555;
+}
+.cr-card-mini img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
+.remove-card-btn {
+    position: absolute; top: -6px; right: -6px;
+    background: var(--cr-red-bot); border: 2px solid white;
+    color: white; width: 18px; height: 18px; border-radius: 50%;
     display: flex; justify-content: center; align-items: center;
+    font-size: 12px; font-weight: bold; z-index: 5;
 }
 
-/* Les rayons de lumière dorés qui tournent derrière */
-.cr-burst {
-    position: absolute; width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,165,0,0) 70%);
-    mask-image: repeating-conic-gradient(black 0deg, black 15deg, transparent 15deg, transparent 30deg);
-    -webkit-mask-image: repeating-conic-gradient(black 0deg, black 15deg, transparent 15deg, transparent 30deg);
-    animation: crRotate 10s linear infinite;
-    z-index: 1; opacity: 0.7;
+/* --- CARTE (MAP) --- */
+.map-view-area { flex: 1; border-radius: 12px; border: 3px solid var(--cr-border-blue); overflow: hidden; background: #000; position: relative; display:flex; justify-content:center; align-items:center; }
+.full-map-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+.world-map { max-width: 100%; max-height: 100%; object-fit: contain; }
+.map-marker { 
+    position: absolute; width: 45px; height: 45px; border-radius: 50%; 
+    border: 3px solid white; box-shadow: 0 0 0 3px #000, 0 5px 10px rgba(0,0,0,0.5);
+    transform: translate(-50%, -50%); z-index: 10; cursor: pointer;
+    background-size: cover; background-position: center; background-color: #333;
+    transition: transform 0.2s;
 }
+.map-marker:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 100; border-color: var(--cr-gold-main); }
 
-/* La carte elle-même qui surgit */
-.cr-new-card-pop {
-    width: 180px; z-index: 10;
-    filter: drop-shadow(0 0 20px rgba(255,215,0,0.8));
-    animation: crPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
+/* --- CHAT --- */
+.chat-feed { background: rgba(0,0,0,0.2); border-radius: 8px; flex:1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+.msg-bubble { padding: 10px 15px; border-radius: 16px; max-width: 80%; font-size: 0.95em; box-shadow: 0 2px 4px rgba(0,0,0,0.3); line-height: 1.4; }
+.msg-bubble.left { align-self: flex-start; background: #4a4a4a; border-bottom-left-radius: 2px; border: 1px solid #666; }
+.msg-bubble.right { align-self: flex-end; background: var(--cr-btn-blue-bot); border-bottom-right-radius: 2px; border: 1px solid var(--cr-btn-blue-top); }
+.msg-bubble.private { border: 2px solid var(--msg-private); background: #2c1a33; }
 
-/* Le gros texte au-dessus */
-.cr-title-pop {
-    position: absolute; top: -80px; width: 100%; text-align: center;
-    color: #ffd700; font-family: 'Arial Black', sans-serif; font-size: 2em; font-weight: 900;
-    text-transform: uppercase; text-shadow: 3px 3px 0 #000, -3px -3px 0 #000, 0 0 20px rgba(255,215,0,0.5);
-    animation: slideDown 0.5s ease-out 0.2s backwards; z-index: 12;
-    white-space: nowrap;
+/* --- MOBILE VIEW --- */
+#client-view { 
+    display: none; flex-direction: column; 
+    background: radial-gradient(circle at center, #325a8e 0%, #183052 100%); 
+    height: 100vh; color: white;
 }
+.mob-header { 
+    height: 60px; background: linear-gradient(to bottom, #333, #111);
+    border-bottom: 3px solid var(--cr-gold-main);
+    display: flex; align-items: flex-end; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 50;
+}
+.mob-tab-btn { flex: 1; border:none; background: transparent; color: #777; padding: 12px; text-align: center; font-weight: 900; cursor: pointer; }
+.mob-tab-btn.active { color: var(--cr-gold-main); background: rgba(255,255,255,0.05); border-bottom: 4px solid var(--cr-gold-main); }
 
-/* Le nom de la carte en dessous */
-.cr-name-pop {
-    position: absolute; bottom: -60px; width: 100%; text-align: center;
-    color: white; font-size: 1.5em; font-weight: bold;
-    text-shadow: 2px 2px 4px #000; z-index: 12;
-    animation: fadeIn 0.5s ease-out 0.6s backwards;
-}
+.mob-container { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.mob-container.active { display: flex; }
+.mob-scroll-content { padding: 20px; overflow-y: auto; }
 
-/* --- Animations Clés --- */
-@keyframes crRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); }}
-@keyframes crPop { 
-    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
-    60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
-    100% { transform: scale(1) rotate(0deg); }
+/* Cartes Stats Mobile */
+.mob-card { 
+    background: rgba(20, 30, 50, 0.9); border: 2px solid #4a8bd3; border-radius: 16px;
+    padding: 15px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    backdrop-filter: blur(5px);
 }
-@keyframes slideDown { from { transform: translateY(-50px); opacity:0; } to { transform: translateY(0); opacity:1; }}
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; }}
+#mobName { text-align: center; font-size: 2em; margin: 10px 0 5px 0; color: white; text-shadow: 0 0 10px rgba(74, 139, 211, 0.8); }
+#mobImg { width: 120px; height: 120px; border-radius: 12px; border: 4px solid var(--cr-gold-main); margin: 0 auto; display: block; box-shadow: 0 5px 15px rgba(0,0,0,0.5); background: #000; }
+
+.mob-val { font-size: 2.2em; color: var(--cr-gold-main); font-weight: 900; text-shadow: 2px 2px 0 #000; line-height: 1; }
+.mob-label { color: #aaa; font-size: 0.8em; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+
+/* --- MODALES --- */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+.modal-content { 
+    background: var(--cr-bg-dark); border: 4px solid var(--cr-border-blue); border-radius: 20px;
+    padding: 25px; width: 90%; max-width: 500px; text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8); color: white;
+    position: relative; max-height: 90vh; overflow-y: auto;
+}
+.close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #aaa; }
+.close-modal:hover { color: white; }
+
+/* --- CARDS GRID (Selection) --- */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; padding: 5px; }
+.grid-card { cursor: pointer; position: relative; transition: transform 0.2s; }
+.grid-card:hover { transform: scale(1.1); z-index: 10; }
+.grid-card img { width: 100%; border-radius: 4px; border: 1px solid #000; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+.card-edit-btn { position: absolute; top: -5px; right: -5px; width: 24px; height: 24px; border-radius: 50%; background: var(--cr-gold-main); border: 2px solid white; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+/* --- ANIMATION NOUVELLE CARTE (BURST) --- */
+#cr-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; animation: fadeIn 0.3s; }
+.cr-effect-container { position: relative; width: 300px; height: 400px; display: flex; justify-content: center; align-items: center; }
+.cr-burst { position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,215,0,0.6) 0%, transparent 70%); mask-image: repeating-conic-gradient(black 0deg, black 15deg, transparent 15deg, transparent 30deg); -webkit-mask-image: repeating-conic-gradient(black 0deg, black 15deg, transparent 15deg, transparent 30deg); animation: spin 10s linear infinite; z-index: 1; }
+.cr-new-card-pop { width: 200px; z-index: 10; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 0 30px rgba(255,215,0,0.8)); }
+.cr-title-pop { position: absolute; top: -80px; font-size: 2.5em; color: var(--cr-gold-main); text-shadow: var(--text-stroke); font-weight: 900; animation: slideDown 0.5s 0.2s backwards; z-index: 12; white-space: nowrap; }
+.cr-name-pop { position: absolute; bottom: -50px; font-size: 1.8em; color: white; text-shadow: 2px 2px 4px #000; animation: slideUp 0.5s 0.4s backwards; z-index: 12; font-weight: bold; }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes popIn { 0% { transform: scale(0) rotate(-15deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+@keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } }
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; } }
