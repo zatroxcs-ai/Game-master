@@ -240,4 +240,22 @@ input:focus, textarea:focus { outline: none; border-color: var(--cr-blue-light);
     padding: 15px; margin-bottom: 15px; border-radius: 12px; 
     color: #3d2613; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
-.mob-journal-date { color:
+.mob-journal-date { color: var(--cr-blue-dark); font-weight: bold; }
+.mob-journal-title { color: #3d2613; font-size: 1.3em; font-weight: 900; }
+.mob-journal-content { font-family: serif; font-size: 1.1em; line-height: 1.5; }
+
+/* --- MODALES & RESTE --- */
+/* (Garde le style des modales précédent ou adapte-le au style bois si tu veux) */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+.modal-content { background: var(--cr-wood-bg); border: 5px solid var(--cr-wood-border); border-radius: 25px; padding: 25px; width: 90%; max-width: 500px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); color: #3d2613; position: relative; max-height: 90vh; overflow-y: auto; }
+.close-modal { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: var(--cr-red); font-weight: bold;}
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; padding: 10px; }
+.grid-card { cursor: pointer; position: relative; transition: transform 0.2s; background: #222; border-radius: 8px; border: 3px solid #000; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+.grid-card:hover { transform: scale(1.1); z-index: 10; border-color: var(--cr-gold); }
+.grid-card img { width: 100%; border-radius: 4px; display:block; }
+.card-edit-btn { position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%; background: var(--cr-gold); border: 2px solid white; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.5); font-weight:bold;}
+
+/* --- ANIMATION NOUVELLE CARTE --- */
+#cr-overlay { background: rgba(0,0,0,0.95); }
+.cr-burst { background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, transparent 70%); }
+.cr-title-pop { color: var(--cr-gold); text-shadow: var(--text-stroke); font-size: 3em; }
