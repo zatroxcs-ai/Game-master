@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manager Royale - V19.3 (Multi-Fichiers)</title>
+    <title>Manager Royale V19.5 - Architecture Fix</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -38,12 +38,10 @@
                         <div class="mob-label">Élixir</div>
                     </div>
                 </div>
-
                 <div class="mob-card">
-                    <div class="mob-label" style="border-bottom:1px solid #444; margin-bottom:5px;">Deck de Combat</div>
+                    <div class="mob-label" style="border-bottom:1px solid #444; margin-bottom:5px;">Deck</div>
                     <div id="mobDeckDisplay" style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center; min-height:40px;"></div>
                 </div>
-
                 <div class="mob-card" style="text-align:left;">
                     <div class="mob-label" style="margin-bottom:10px;">INVENTAIRE</div>
                     <div id="mobInv" style="white-space: pre-wrap; font-size: 0.9em; color: #ddd;"></div>
@@ -93,9 +91,7 @@
         </header>
 
         <div id="view-map" class="view-section active">
-            <div style="display: flex; width: 100%; height: 100%;">
-                <div class="map-sidebar">
-                    <div style="padding:10px; font-weight:bold; color:var(--accent); border-bottom:1px solid #333;">ATLAS</div>
+            <div class="split-layout"> <div class="map-sidebar list-panel"> <div style="padding:10px; font-weight:bold; color:var(--accent); border-bottom:1px solid #333;">ATLAS</div>
                     <div id="mapListContainer" class="map-list"></div>
                     <div class="map-controls">
                         <input type="text" id="newMapName" placeholder="Nom (ex: Enfers)" style="width:100%; margin:0; font-size:0.8em;">
@@ -105,8 +101,7 @@
                         <input type="text" id="editMapUrl" placeholder="URL Image .png" style="width:100%; margin:0; font-size:0.8em;" onchange="mapManager.updateUrl()">
                     </div>
                 </div>
-                <div class="map-view-area">
-                    <div id="gmMapContainer" class="full-map-container">
+                <div class="map-view-area detail-panel" style="padding:0; background:#000;"> <div id="gmMapContainer" class="full-map-container">
                         <img id="worldMapImg" src="" class="world-map" alt="Carte">
                     </div>
                     <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); padding:5px 10px; border-radius:4px; pointer-events:none;">
@@ -181,16 +176,7 @@
                         <input type="text" id="nType" placeholder="Rôle">
                     </div>
                     <input type="text" id="nImg" placeholder="Avatar URL">
-                    
-                    <div style="display:flex; gap:10px;">
-                        <div style="flex:1"><label>Or</label><input type="number" id="nGold"></div>
-                        <div style="flex:1"><label>Élixir</label><input type="number" id="nElixir"></div>
-                        <div style="flex:1"><label>Noir</label><input type="number" id="nDark"></div>
-                    </div>
-
-                    <label>Histoire</label>
                     <textarea id="nStory" placeholder="Histoire..." style="height:80px;"></textarea>
-                    
                     <label>Deck / Objets</label>
                     <div id="nDeckContainer" class="visual-inv-box"></div>
                     <button class="action-btn" style="width:100%; margin-top:5px; background:#444;" onclick="openCardSelectionModal('npc')">+ Cartes / Objets</button>
