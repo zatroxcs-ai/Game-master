@@ -1,261 +1,235 @@
 /* ============================================================
-   THEME: ARENE ROYALE LUMINEUSE (V2)
-   STYLE: Cartoon, Tactile, Bois clair & Couleurs vives
+   THEME: ARENE ROYALE V3 (FULL SCREEN & POLISHED)
    ============================================================ */
 
 :root {
-    /* Palette Clash "Cartoon" */
-    --cr-blue-light: #5496db;
-    --cr-blue-dark: #2d5d91;
-    --cr-blue-border: #1a3a63;
+    /* COULEURS OFFICIELLES */
+    --cr-blue-bg: #345e8c;      /* Le bleu du fond de l'arène */
+    --cr-panel-wood: #e8d8c0;   /* Le beige des menus */
+    --cr-panel-dark: #2a3d52;   /* Le fond sombre des cartes */
+    --cr-border-wood: #5c3a21;  /* Bordure bois foncé */
+    --cr-border-gold: #fcc22d;  /* Or */
+    --cr-text-brown: #3d2613;   /* Texte principal */
     
-    --cr-gold: #fcc22d;
-    --cr-gold-dark: #c99208;
-    
-    --cr-green: #80e85a;
-    --cr-green-dark: #4ca32f;
-    
-    --cr-red: #ff6b6b;
-    --cr-red-dark: #c0392b;
+    /* BOUTONS */
+    --btn-blue-top: #5496db;
+    --btn-blue-bot: #2d5d91;
+    --btn-green-top: #80e85a;
+    --btn-green-bot: #3da82b;
+    --btn-red-top: #ff6b6b;
+    --btn-red-bot: #c0392b;
 
-    /* Textures */
-    --cr-wood-bg: #e6cfa8; /* Bois clair panneaux */
-    --cr-wood-border: #8c5e35; /* Bordure bois */
-    --cr-wood-dark-bg: #5c3a21; /* Bois foncé header */
-
-    /* Background */
-    --bg-arena: radial-gradient(circle at center top, #4a8bd3, #2c5c96 60%, #1c3a59);
-
-    /* Effets */
-    --text-stroke: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-    --panel-shadow: 0 6px 0 #5c3a21, 0 15px 20px rgba(0,0,0,0.4);
-    --btn-shadow: 0 4px 0 rgba(0,0,0,0.4);
+    /* EFFETS */
+    --shadow-hard: 0 4px 0 rgba(0,0,0,0.4);
+    --shadow-soft: 0 5px 15px rgba(0,0,0,0.3);
+    --text-stroke: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
+
+/* --- RESET & BASE --- */
+* { box-sizing: border-box; }
 
 body {
     font-family: 'Segoe UI', Roboto, sans-serif;
     margin: 0; padding: 0;
-    background: var(--bg-arena); /* Fond ciel d'arène */
-    color: #3d2613; /* Texte foncé sur fond clair pour lisibilité */
+    /* Fond texture subtile ou dégradé */
+    background: radial-gradient(circle at center, #4a8bd3 0%, #2c5c96 100%);
+    color: var(--cr-text-brown);
     height: 100vh; display: flex; flex-direction: column; overflow: hidden;
 }
 
-/* --- TYPOGRAPHIE "CLASH" --- */
-h1, h2, h3, header b, .mob-val, .cr-title-pop {
-    text-shadow: var(--text-stroke);
-    color: white !important; /* Les titres restent blancs avec contour noir */
-    font-weight: 900 !important;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-h3 {
-    color: var(--cr-gold) !important; /* Titres de section en Or */
-    background: var(--cr-wood-dark-bg);
-    padding: 10px;
-    border-radius: 8px;
-    border: 3px solid var(--cr-wood-border);
-    margin-top: 0;
-    text-align: center;
-}
-
-/* --- HEADER (MJ) --- */
+/* --- HEADER (Le toit) --- */
 header {
-    background: var(--cr-wood-dark-bg);
-    border-bottom: 4px solid #3d2613;
-    padding: 5px 15px;
+    background: #3d2613; /* Bois très foncé */
+    border-bottom: 4px solid #1a0b05;
+    padding: 0 15px;
+    height: 60px; flex-shrink: 0;
     display: flex; justify-content: space-between; align-items: center;
-    height: 65px; flex-shrink: 0;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
     z-index: 100;
 }
-.controls-area { display: flex; align-items: center; gap: 10px; }
 
-/* --- ONGLETS --- */
-.nav-tabs { display: flex; gap: 5px; height: 100%; align-items: flex-end; }
+/* --- ONGLETS (Menu) --- */
+.nav-tabs { display: flex; gap: 4px; height: 100%; align-items: flex-end; }
 
 .tab-btn {
-    background: #8c5e35; /* Bois moyen */
-    color: #e6cfa8; /* Texte clair */
-    border: 3px solid #3d2613;
+    background: #754c24;
+    color: #bbb;
+    border: 2px solid #1a0b05;
     border-bottom: none;
-    border-radius: 12px 12px 0 0;
-    padding: 10px 15px;
+    border-radius: 8px 8px 0 0;
+    padding: 8px 16px;
     cursor: pointer;
-    font-weight: bold; font-size: 0.9em; text-transform: uppercase;
-    transition: all 0.2s;
+    font-weight: 800; text-transform: uppercase; font-size: 0.85em;
+    transition: all 0.1s;
 }
-.tab-btn:hover { background: #a3744a; transform: translateY(-2px); }
+.tab-btn:hover { background: #8c5e35; color: white; }
 .tab-btn.active {
-    background: var(--cr-blue-light);
+    background: var(--cr-blue-bg); /* Se fond avec le background */
     color: white;
-    border-color: var(--cr-blue-border);
-    height: 55px;
-    margin-bottom: 5px;
-    box-shadow: 0 -4px 0 rgba(0,0,0,0.2) inset;
-    text-shadow: 1px 1px 2px #000;
+    border-color: #fff;
+    border-bottom: 4px solid var(--cr-blue-bg); /* Astuce visuelle */
+    height: 50px; /* Plus grand */
+    margin-bottom: -4px;
+    z-index: 10;
+    text-shadow: var(--text-stroke);
 }
 
-/* --- ZONES DE CONTENU (PANNEAUX BOIS) --- */
-.view-section { display: none; flex: 1; height: calc(100vh - 70px); width: 100%; }
+/* --- LAYOUT PRINCIPAL (Le corps) --- */
+.view-section { 
+    display: none; 
+    flex: 1; 
+    height: calc(100vh - 60px); /* Tout le reste de l'écran */
+    width: 100%; 
+    padding: 15px; /* Marge autour du contenu */
+    background: var(--cr-blue-bg); /* Fond uni pour éviter les trous */
+}
 .view-section.active { display: flex; }
-.split-layout { display: flex; height: 100%; width: 100%; padding: 20px; gap: 20px; box-sizing: border-box; }
 
-.list-panel, .detail-panel, .map-sidebar {
-    background: var(--cr-wood-bg); /* Texture bois clair */
-    border: 4px solid var(--cr-wood-border);
-    border-radius: 16px;
-    box-shadow: var(--panel-shadow); /* Effet 3D épais */
-    padding: 15px;
+/* C'est ICI qu'on règle ton problème d'affichage "vide" */
+.split-layout { 
+    display: flex; 
+    width: 100%; 
+    height: 100%; 
+    gap: 15px; 
+}
+
+/* --- PANNEAUX (Gauche et Droite) --- */
+.list-panel, .map-sidebar {
+    flex: 0 0 280px; /* Largeur fixe colonne gauche */
+    background: var(--cr-panel-wood);
+    border: 3px solid var(--cr-border-wood);
+    border-radius: 12px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.1), var(--shadow-soft);
+    padding: 10px;
+    display: flex; flex-direction: column;
+    overflow: hidden; /* Important */
+}
+
+.detail-panel, .map-view-area {
+    flex: 1; /* Prend tout le reste de la place */
+    background: var(--cr-panel-wood);
+    border: 3px solid var(--cr-border-wood);
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    padding: 20px;
     overflow-y: auto;
     display: flex; flex-direction: column;
+    position: relative;
 }
-.list-panel { flex: 0 0 300px; }
-.detail-panel { flex: 1; background: #f0e0c0; /* Un peu plus clair pour le détail */ }
 
-/* --- LISTES ITEMS --- */
-.list-card-item {
-    background: #d1bfa0; /* Bois légèrement plus foncé */
-    border: 3px solid var(--cr-wood-border);
-    border-radius: 12px;
-    padding: 8px; margin-bottom: 8px;
-    display: flex; align-items: center; gap: 12px;
-    cursor: pointer; transition: all 0.1s;
-    color: #3d2613;
-    font-weight: bold;
+/* Cas spécial pour la carte : Fond noir */
+.map-view-area {
+    background: #000;
+    border: 4px solid #1a0b05;
+    padding: 0; /* Pas de marge interne pour la carte */
 }
-.list-card-item:hover { background: var(--cr-blue-light); color: white; border-color: var(--cr-blue-border); transform: scale(1.02); }
-.list-card-item.selected { background: var(--cr-blue-dark); color: white; border: 3px solid var(--cr-gold); }
-.list-card-item.npc { border-left: 8px solid var(--npc-color); }
 
-.avatar-circle { width: 48px; height: 48px; border-radius: 10px; border: 3px solid var(--cr-wood-border); background: #000; object-fit: cover; }
-
-/* --- BOUTONS "CHUNKY" CLASH --- */
-button.action-btn {
-    background: linear-gradient(to bottom, var(--cr-blue-light), var(--cr-blue-dark));
-    border: 3px solid var(--cr-blue-border);
-    border-bottom-width: 6px; /* Effet épaisseur */
-    border-radius: 20px; /* Très arrondi */
-    color: white; padding: 10px 20px;
-    cursor: pointer; font-weight: 900; text-transform: uppercase;
-    text-shadow: 2px 2px 0 #000;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-    transition: all 0.1s; margin: 5px;
+/* --- CONTENU DES LISTES --- */
+/* Le conteneur scrollable */
+#playersListContainer, #npcsListContainer, #mapListContainer, .map-list {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 5px; /* Pour la scrollbar */
 }
-button.action-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
-button.action-btn:active { border-bottom-width: 3px; transform: translateY(3px); box-shadow: inset 0 4px 8px rgba(0,0,0,0.4); }
 
-/* Couleurs boutons */
-button.save-btn { background: linear-gradient(to bottom, var(--cr-green), var(--cr-green-dark)); border-color: #1e5714; }
-button.reset-btn { background: linear-gradient(to bottom, var(--cr-red), var(--cr-red-dark)); border-color: #66120a; }
+.list-card-item, .map-item {
+    background: white;
+    border: 2px solid #c7b299;
+    border-radius: 8px;
+    padding: 8px; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: transform 0.1s;
+    color: var(--cr-text-brown);
+    font-weight: 600;
+}
+.list-card-item:hover, .map-item:hover {
+    transform: scale(1.02);
+    border-color: var(--btn-blue-top);
+    background: #f0f8ff;
+}
+.list-card-item.selected, .map-item.active {
+    background: var(--cr-blue-bg);
+    color: white;
+    border-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.avatar-circle {
+    width: 40px; height: 40px; border-radius: 6px;
+    background: #333; object-fit: cover;
+    border: 1px solid #000;
+}
+
+/* --- CARTE DU MONDE --- */
+.full-map-container {
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    background: #111; /* Gris très foncé derrière la carte */
+    overflow: hidden; /* Empêche de dépasser */
+}
+.world-map {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain; /* L'image ne sera jamais déformée */
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+}
+#currentMapLabel {
+    font-size: 1.2em; font-weight: 900;
+    text-transform: uppercase;
+    text-shadow: var(--text-stroke);
+    letter-spacing: 1px;
+}
+
+/* --- BOUTONS --- */
+.action-btn {
+    background: linear-gradient(to bottom, var(--btn-blue-top), var(--btn-blue-bot));
+    border: none; border-bottom: 4px solid #1c4470;
+    border-radius: 8px;
+    color: white; padding: 10px 15px;
+    font-weight: 800; text-transform: uppercase;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+    cursor: pointer; margin-top: 5px;
+}
+.action-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
+
+.save-btn { background: linear-gradient(to bottom, var(--btn-green-top), var(--btn-green-bot)); border-bottom-color: #2d7a1f; }
+.reset-btn { background: linear-gradient(to bottom, var(--btn-red-top), var(--btn-red-bot)); border-bottom-color: #8a291e; }
 
 /* --- FORMULAIRES --- */
-label { color: #5c3a21; font-weight: bold; margin-bottom: 5px; display: block; }
-input, select, textarea, .visual-inv-box {
-    background: #e8d8c0;
-    border: 3px solid var(--cr-wood-border);
-    border-radius: 12px;
-    padding: 10px; color: #3d2613; font-weight: bold;
-    width: 100%; box-sizing: border-box; margin-bottom: 10px;
+input, textarea, select {
+    background: #fff; border: 2px solid #c7b299;
+    border-radius: 6px; padding: 8px;
+    width: 100%; margin-bottom: 10px;
+    color: #333; font-weight: bold;
     font-family: inherit;
-    box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
 }
-input:focus, textarea:focus { outline: none; border-color: var(--cr-blue-light); background: white; }
+input:focus { border-color: var(--btn-blue-top); outline: none; }
+h3 { border-bottom: 2px solid #c7b299; padding-bottom: 5px; margin-top:0; color: var(--cr-text-brown); text-transform: uppercase; }
 
-/* --- CARTES (Deck) --- */
-.visual-inv-box { min-height: 90px; background: rgba(0,0,0,0.1); border: 3px dashed var(--cr-wood-border); }
-.cr-card-mini { 
-    width: 64px; height: 78px; position: relative; cursor: pointer; 
-    background: #222; border-radius: 6px;
-    border: 2px solid #000;
-    box-shadow: 3px 3px 5px rgba(0,0,0,0.4);
-    transition: transform 0.1s;
+/* --- MOBILE (Client) --- */
+#client-view {
+    background: var(--cr-blue-bg);
+    display: none; flex-direction: column; height: 100vh;
 }
-.cr-card-mini:hover { transform: scale(1.1); z-index: 10; border-color: var(--cr-gold); }
-.cr-card-mini img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
-.remove-card-btn {
-    position: absolute; top: -8px; right: -8px;
-    background: var(--cr-red); border: 2px solid white;
-    color: white; width: 22px; height: 22px; border-radius: 50%;
-    display: flex; justify-content: center; align-items: center;
-    font-weight: bold; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+.mob-header {
+    background: #1a0b05;
+    height: 60px; flex-shrink: 0;
+    display: flex; align-items: center;
+    border-bottom: 3px solid var(--cr-border-gold);
 }
-
-/* --- CHAT --- */
-.chat-feed { background: rgba(255,255,255,0.5); border-radius: 12px; border: 3px solid var(--cr-wood-border); flex:1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-.msg-bubble { padding: 12px 18px; border-radius: 20px; max-width: 80%; font-weight: 500; box-shadow: 0 3px 5px rgba(0,0,0,0.2); border: 2px solid rgba(0,0,0,0.1); }
-.msg-bubble.left { align-self: flex-start; background: white; color: black; border-bottom-left-radius: 4px; }
-.msg-bubble.right { align-self: flex-end; background: var(--cr-blue-light); color: white; border-bottom-right-radius: 4px; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); }
-.msg-bubble.private { border: 3px solid var(--msg-private); background: #f0e0ff; color: #3d2613; }
-.chat-input-area { background: var(--cr-wood-border); padding: 10px; border-radius: 12px; margin-top: 10px;}
-
-/* ================= MOBILE VIEW (Joueur) ================= */
-#client-view { 
-    display: none; flex-direction: column; 
-    background: var(--bg-arena); 
-    height: 100vh; color: white;
-}
-.mob-header { 
-    height: 65px; background: var(--cr-wood-dark-bg);
-    border-bottom: 4px solid #3d2613;
-    display: flex; align-items: flex-end; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 50;
-}
-.mob-tab-btn { 
-    flex: 1; background: transparent; border: none; color: #a3744a; 
-    padding: 12px; text-align: center; font-weight: 900; 
-    text-transform: uppercase; text-shadow: 1px 1px 2px #000;
-}
-.mob-tab-btn.active { 
-    color: var(--cr-gold); 
-    background: rgba(0,0,0,0.2); 
-    border-bottom: 5px solid var(--cr-gold); 
-    font-size: 1.1em;
-}
+.mob-tab-btn { flex: 1; background: transparent; border: none; color: #888; font-weight: 900; font-size: 1.2em; }
+.mob-tab-btn.active { color: var(--cr-border-gold); text-shadow: 0 0 10px rgba(252, 194, 45, 0.5); transform: scale(1.2); }
 
 .mob-container { display: none; flex: 1; flex-direction: column; overflow: hidden; }
 .mob-container.active { display: flex; }
-.mob-scroll-content { padding: 20px; overflow-y: auto; }
+.mob-scroll-content { padding: 15px; overflow-y: auto; }
 
-/* Cartes Stats Mobile */
-.mob-card { 
-    background: var(--cr-wood-bg); /* Panneau bois */
-    border: 4px solid var(--cr-wood-border);
-    border-radius: 20px;
-    padding: 15px; margin-bottom: 15px; 
-    box-shadow: 0 8px 0 #5c3a21, 0 15px 20px rgba(0,0,0,0.4); /* Gros effet 3D */
-    color: #3d2613;
+.mob-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 5px 0 #c7b299, 0 10px 20px rgba(0,0,0,0.2);
+    padding: 15px; margin-bottom: 20px;
+    text-align: center; border: 2px solid #333;
 }
+#mobName { color: var(--cr-text-brown); font-size: 1.8em; margin: 10px 0 0 0; text-transform: uppercase; font-weight: 900; }
+#mobImg { width: 100px; height: 100px; border-radius: 12px; border: 4px solid #333; box-shadow: 0 5px 0 rgba(0,0,0,0.3); }
 
-#mobName { font-size: 2.2em; margin: 15px 0 5px 0; color: white; text-shadow: var(--text-stroke); }
-#mobImg { width: 130px; height: 130px; border-radius: 20px; border: 5px solid var(--cr-gold); margin: 0 auto; display: block; box-shadow: 0 10px 20px rgba(0,0,0,0.5); background: #000; }
-#mobRegion { color: var(--cr-gold); font-weight: bold; text-shadow: 1px 1px 2px #000; font-size: 1.2em; }
-
-.mob-val { font-size: 2.5em; color: white !important; font-weight: 900; text-shadow: var(--text-stroke); line-height: 1; }
-.mob-label { color: #5c3a21; font-size: 0.9em; font-weight: 900; text-transform: uppercase; margin-top: 5px; }
-
-/* Journal Mobile */
-.mob-journal-entry { 
-    background: #f0e0c0; border: 3px solid var(--cr-wood-border); 
-    border-left: 8px solid var(--cr-blue-light);
-    padding: 15px; margin-bottom: 15px; border-radius: 12px; 
-    color: #3d2613; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-.mob-journal-date { color: var(--cr-blue-dark); font-weight: bold; }
-.mob-journal-title { color: #3d2613; font-size: 1.3em; font-weight: 900; }
-.mob-journal-content { font-family: serif; font-size: 1.1em; line-height: 1.5; }
-
-/* --- MODALES & RESTE --- */
-/* (Garde le style des modales précédent ou adapte-le au style bois si tu veux) */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-.modal-content { background: var(--cr-wood-bg); border: 5px solid var(--cr-wood-border); border-radius: 25px; padding: 25px; width: 90%; max-width: 500px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); color: #3d2613; position: relative; max-height: 90vh; overflow-y: auto; }
-.close-modal { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: var(--cr-red); font-weight: bold;}
-.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; padding: 10px; }
-.grid-card { cursor: pointer; position: relative; transition: transform 0.2s; background: #222; border-radius: 8px; border: 3px solid #000; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
-.grid-card:hover { transform: scale(1.1); z-index: 10; border-color: var(--cr-gold); }
-.grid-card img { width: 100%; border-radius: 4px; display:block; }
-.card-edit-btn { position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%; background: var(--cr-gold); border: 2px solid white; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: black; box-shadow: 0 2px 4px rgba(0,0,0,0.5); font-weight:bold;}
-
-/* --- ANIMATION NOUVELLE CARTE --- */
-#cr-overlay { background: rgba(0,0,0,0.95); }
-.cr-burst { background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, transparent 70%); }
-.cr-title-pop { color: var(--cr-gold); text-shadow: var(--text-stroke); font-size: 3em; }
+.mob-val { font-size: 2.5em; font-weight: 900; color: #
