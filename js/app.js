@@ -88,8 +88,11 @@ function renderChat(containerId, viewerId) {
     c.scrollTop = c.scrollHeight;
 }
 
-// === CLIENT ===
+// === CLIENT MOBILE (AUTOMATISÉ) ===
 const client = {
+    // Mémoire locale pour détecter les changements
+    lastDeckState: null, 
+
     check: () => {
         const params = new URLSearchParams(window.location.search);
         if(params.get('mode') === 'client') {
@@ -98,35 +101,62 @@ const client = {
             document.title = "Jeu en cours";
             try {
                 let u = atob(params.get('u')), k = atob(params.get('k'));
-                localStorage.setItem('sb_url', u); localStorage.setItem('sb_key', k); gameData.sessionId = params.get('s'); cloud.init();
+                localStorage.setItem('sb_url', u); localStorage.setItem('sb_key', k); 
+                gameData.sessionId = params.get('s'); cloud.init();
             } catch(e) { document.getElementById('mobName').innerText = "ERREUR LIEN"; }
         } else cloud.init();
     },
+
     render: (d) => {
         const id = parseInt(new URLSearchParams(window.location.search).get('id'));
         const p = d.players.find(x => x.id === id);
+        
         if(p) {
+            // 1. MISE À JOUR DES TEXTES (Classique)
             document.getElementById('mobName').innerText = p.name;
             document.getElementById('mobImg').src = p.img || "https://via.placeholder.com/150";
+            
             const regionEl = document.getElementById('mobRegion');
             if(!regionEl.innerHTML.includes("Erreur")) regionEl.innerText = p.region || "Inconnu";
+            
             document.getElementById('mobGold').innerText = p.gold; 
             document.getElementById('mobElixir').innerText = p.elixir;
             document.getElementById('mobInv').innerText = p.inv || "";
             
+            // 2. DÉTECTION DE NOUVELLE CARTE (Le Cerveau)
+            const currentDeck = p.deck || [];
+            
+            // Si on a déjà un état précédent en mémoire (ce n'est pas le chargement de la page)
+            if (client.lastDeckState !== null) {
+                // On regarde s'il y a une différence
+                const newCards = currentDeck.filter(cardId => !client.lastDeckState.includes(cardId));
+                
+                // S'il y a des nouvelles cartes, on lance l'effet pour la première trouvée
+                if (newCards.length > 0) {
+                    console.log("Nouvelle carte détectée !", newCards[0]);
+                    playClashCardEffect(newCards[0]);
+                }
+            }
+
+            // On met à jour la mémoire pour la prochaine fois
+            client.lastDeckState = [...currentDeck];
+
+            // 3. AFFICHAGE DU DECK
             const md = document.getElementById('mobDeckDisplay'); md.innerHTML = "";
-            if(p.deck && p.deck.length>0) {
-                p.deck.forEach(cid => { 
-                    const c=gameData.cards.find(x=>x.id==cid); 
-                    if(c) md.innerHTML+=`<img src="${c.img}" style="width:40px; height:50px; object-fit:contain;">`; 
+            if(currentDeck.length > 0) {
+                currentDeck.forEach(cid => { 
+                    const c = gameData.cards.find(x => x.id == cid); 
+                    if(c) md.innerHTML += `<img src="${c.img}" style="width:40px; height:50px; object-fit:contain;">`; 
                 });
             } else md.innerHTML = "<small style='color:#555'>Aucune carte</small>";
             
+            // 4. MISE À JOUR CHAT & JOURNAL
             const sel = document.getElementById('mobChatTarget');
             const curr = sel.value;
             sel.innerHTML = `<option value="global">Global</option><option value="gm">Au MJ</option>`;
             d.players.forEach(o => { if(o.id !== id) sel.innerHTML += `<option value="${o.id}">à ${o.name}</option>`; });
             sel.value = curr; 
+            
             renderChat('mobChatFeed', id);
 
             const jCont = document.getElementById('mobJournalList'); jCont.innerHTML = "";
@@ -140,6 +170,7 @@ const client = {
             });
         }
     },
+
     switchTab: (t) => {
         document.querySelectorAll('.mob-container').forEach(e => e.classList.remove('active'));
         document.querySelectorAll('.mob-tab-btn').forEach(e => e.classList.remove('active'));
