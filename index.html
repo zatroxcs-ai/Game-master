@@ -38,10 +38,12 @@
                         <div class="mob-label">Élixir</div>
                     </div>
                 </div>
+
                 <div class="mob-card">
-                    <div class="mob-label" style="border-bottom:1px solid #444; margin-bottom:5px;">Deck</div>
+                    <div class="mob-label" style="border-bottom:1px solid #444; margin-bottom:5px;">Deck de Combat</div>
                     <div id="mobDeckDisplay" style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center; min-height:40px;"></div>
                 </div>
+
                 <div class="mob-card" style="text-align:left;">
                     <div class="mob-label" style="margin-bottom:10px;">INVENTAIRE</div>
                     <div id="mobInv" style="white-space: pre-wrap; font-size: 0.9em; color: #ddd;"></div>
@@ -152,9 +154,11 @@
                     </div>
                     <label>Inventaire</label>
                     <textarea id="pTextInv" placeholder="..." style="height:80px;"></textarea>
-                    <label>Deck</label>
+                    
+                    <label>Deck (Combat)</label>
                     <div id="pDeckContainer" class="visual-inv-box"></div>
                     <button class="action-btn" style="width:100%; margin-top:5px; background:#444;" onclick="openCardSelectionModal('player')">+ Cartes</button>
+                    
                     <div style="margin-top:20px; text-align:right;">
                         <button class="action-btn reset-btn" onclick="deleteEntity('players')">Supprimer</button>
                         <button class="action-btn save-btn" onclick="savePlayer()">Enregistrer</button>
@@ -180,10 +184,10 @@
                     <textarea id="nStory" placeholder="Histoire..." style="height:80px;"></textarea>
                     <label>Deck / Objets</label>
                     <div id="nDeckContainer" class="visual-inv-box"></div>
-                    <button class="action-btn" style="width:100%; margin-top:5px; background:#444;" onclick="openCardSelectionModal('npc')">+ Cartes</button>
+                    <button class="action-btn" style="width:100%; margin-top:5px; background:#444;" onclick="openCardSelectionModal('npc')">+ Cartes / Objets</button>
                     <div style="margin-top:20px; text-align:right;">
                         <button class="action-btn reset-btn" onclick="deleteEntity('npcs')">Supprimer</button>
-                        <button class="action-btn save-btn" style="background:var(--npc-color)" onclick="saveNPC()">Enregistrer</button>
+                        <button class="action-btn save-btn" style="background:var(--npc-color)" onclick="saveNPC()">Enregistrer PNJ</button>
                     </div>
                 </div>
             </div>

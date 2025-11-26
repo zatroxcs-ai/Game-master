@@ -8,7 +8,7 @@ let gameData = {
     chat: [],
     maps: [
         { id: 'root', name: 'Monde Principal', img: 'map.png' },
-        { id: 'enfers', name: 'Royaume des Enfers', img: 'enfers.png' }
+        { id: 'enfers', name: 'Royaume des Enfers', img: 'enfers.png' } 
     ],
     activeMapId: 'root',
     cards: [ 
@@ -23,11 +23,9 @@ let gameData = {
         {id:'i1', name:'Potion de Soin', img:'https://via.placeholder.com/100/e74c3c/fff?text=Soin'},
         {id:'i2', name:'Parchemin', img:'https://via.placeholder.com/100/f1c40f/000?text=Quest'}
     ],
-    // REMPLACE PAR TON VRAI ID DE SESSION CI-DESSOUS
-    sessionId: 'sess-1764101013787' 
+    sessionId: 'sess-1764101013787'
 };
 
-// Fonction de debug mobile globale
 function debugMob(msg, color='red') {
     const el = document.getElementById('mobRegion'); 
     const params = new URLSearchParams(window.location.search);

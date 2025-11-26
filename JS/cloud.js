@@ -1,4 +1,4 @@
-// === CLOUD (SUPABASE) ===
+// === CLOUD ===
 const cloud = {
     client: null,
     setup: () => {
@@ -22,8 +22,7 @@ const cloud = {
                     payload => { 
                         if(payload.new && payload.new.data) { 
                             gameData = payload.new.data; 
-                            // On appelle la fonction de mise à jour qui est dans app.js
-                            if(typeof refreshGameData === 'function') refreshGameData(); 
+                            refreshGameData(); 
                         } 
                     }).subscribe(s => {
                         if(s==='SUBSCRIBED') { 
@@ -43,7 +42,7 @@ const cloud = {
         const {data} = await cloud.client.from('sessions').select('data').eq('id', gameData.sessionId).single();
         if(data) { 
             gameData = data.data; 
-            if(typeof refreshGameData === 'function') refreshGameData(); 
+            refreshGameData(); 
         } else {
             cloud.push();
         }
