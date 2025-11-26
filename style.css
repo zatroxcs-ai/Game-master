@@ -1,0 +1,201 @@
+<style>
+    /* --- NOUVELLES VARIABLES THÉMATIQUES --- */
+    :root {
+        --cr-blue-dark: #183052; /* Fond profond */
+        --cr-blue-mid: #325a8e;  /* Panneaux principaux */
+        --cr-blue-light: #4a86c7; /* Bordures claires */
+        --cr-wood-dark: #4a3018; /* Boutons inactifs */
+        --cr-wood-light: #8c5e35; /* Boutons actifs */
+        --cr-gold: #ffd700; /* Accents et texte important */
+        --cr-shadow-inset: inset 0 3px 8px rgba(0,0,0,0.6);
+        --cr-shadow-pop: 0 4px 0 rgba(0,0,0,0.4), 0 5px 10px rgba(0,0,0,0.3); /* Effet 3D */
+        --cr-border-radius: 16px;
+        --cr-text-outline: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    }
+
+    /* --- FONDS GLOBAUX --- */
+    body {
+        /* Dégradé radial bleu style "Arène" */
+        background: radial-gradient(circle at center top, var(--cr-blue-mid) 0%, var(--cr-blue-dark) 100%) !important;
+    }
+    #gm-view, #client-view {
+        background: transparent !important;
+    }
+
+    /* --- PANNEAUX ET CONTENEURS (PC) --- */
+    /* On donne un aspect "bloc de pierre bleue" aux zones principales */
+    .list-panel, .detail-panel, .map-sidebar, .map-controls, .chat-input-area, #gmChatTitle, .log-container {
+        background: var(--cr-blue-dark) !important;
+        border: 3px solid var(--cr-blue-mid) !important;
+        box-shadow: var(--cr-shadow-inset) !important;
+        border-radius: 8px !important;
+    }
+    .detail-panel, .view-section.active .split-layout {
+        padding: 15px !important;
+        gap: 10px;
+    }
+    /* L'entête du MJ ressemble plus à un ponton en bois */
+    header {
+        background: linear-gradient(to bottom, #3a2410, #2b1a0a) !important;
+        border-bottom: 4px solid #1a0f05 !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+        z-index: 20;
+    }
+
+    /* --- BOUTONS DE NAVIGATION (ONGLETS PC) --- */
+    /* Aspect "gros bouton en bois" */
+    .tab-btn {
+        background: linear-gradient(to bottom, var(--cr-wood-light), var(--cr-wood-dark)) !important;
+        border: 2px solid #1a0f05 !important;
+        border-bottom: none !important;
+        border-radius: 10px 10px 0 0 !important;
+        color: #e3d2b4 !important;
+        text-shadow: 1px 1px 2px #000 !important;
+        box-shadow: inset 0 2px 2px rgba(255,255,255,0.2);
+        margin-right: 2px !important;
+    }
+    .tab-btn:hover { background: linear-gradient(to bottom, #9e6b3d, #5c3d21) !important; }
+    /* L'onglet actif ressort et s'allume */
+    .tab-btn.active {
+        background: linear-gradient(to bottom, var(--cr-blue-light), var(--cr-blue-mid)) !important;
+        color: var(--cr-gold) !important;
+        border-color: var(--cr-blue-light) !important;
+        transform: translateY(-4px);
+        height: 54px !important;
+        box-shadow: 0 -2px 10px rgba(74, 134, 199, 0.5) !important;
+        z-index: 25 !important;
+    }
+
+    /* --- BOUTONS D'ACTION (SAUVER, ETC.) --- */
+    /* Effet 3D "cliquable" très marqué */
+    .action-btn {
+        background: linear-gradient(to bottom, #546e7a, #37474f) !important;
+        border: 1px solid #263238 !important;
+        border-radius: 8px !important;
+        box-shadow: var(--cr-shadow-pop) !important;
+        transition: all 0.1s !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .action-btn:active {
+        transform: translateY(4px) !important; /* Le bouton s'enfonce */
+        box-shadow: none !important;
+    }
+    /* Couleurs spécifiques pour Sauver/Reset */
+    .save-btn { background: linear-gradient(to bottom, #2ecc71, #219653) !important; box-shadow: 0 4px 0 #145a32, 0 5px 10px rgba(0,0,0,0.3) !important; }
+    .reset-btn { background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; box-shadow: 0 4px 0 #7b241c, 0 5px 10px rgba(0,0,0,0.3) !important; }
+
+    /* --- FORMULAIRES ET INPUTS --- */
+    /* Aspect "creusé" dans l'interface */
+    input, select, textarea, .visual-inv-box {
+        background: rgba(0,0,0,0.4) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-radius: 10px !important;
+        box-shadow: inset 0 3px 5px rgba(0,0,0,0.5) !important;
+        color: #fff !important;
+    }
+    input:focus, textarea:focus, select:focus {
+        border-color: var(--cr-gold) !important;
+        background: rgba(0,0,0,0.6) !important;
+    }
+    h3 {
+        color: var(--cr-gold) !important;
+        text-shadow: var(--cr-text-outline) !important;
+        border-bottom: 2px solid var(--cr-blue-mid) !important;
+    }
+
+    /* --- LISTES ET CARTES (ITEMS) --- */
+    /* Plaques individuelles avec bords arrondis */
+    .list-card-item {
+        background: linear-gradient(to right, rgba(40, 65, 100, 0.9), rgba(24, 48, 82, 0.9)) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 5px rgba(0,0,0,0.3) !important;
+        margin-bottom: 10px !important;
+        backdrop-filter: blur(4px);
+    }
+    .list-card-item:hover {
+        border-color: var(--cr-blue-light) !important;
+        transform: scale(1.02);
+    }
+    .list-card-item.selected {
+        border-left: none !important; /* On enlève l'ancienne bordure */
+        border: 2px solid var(--cr-gold) !important; /* On remplace par un cadre doré */
+        background: linear-gradient(to right, rgba(100, 80, 20, 0.6), rgba(24, 48, 82, 0.9)) !important;
+    }
+    .avatar-circle {
+        border: 3px solid var(--cr-gold) !important;
+        box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+    }
+
+    /* ================= MOBILE VISUEL ================= */
+    /* En-tête mobile style Clash */
+    .mob-header {
+        background: linear-gradient(to bottom, var(--cr-blue-mid), var(--cr-blue-dark)) !important;
+        border-bottom: 4px solid var(--cr-wood-dark) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+    }
+    /* Onglets mobiles */
+    .mob-tab-btn {
+        background: transparent !important;
+        border-bottom: none !important;
+        font-family: 'Segoe UI Black', Roboto, sans-serif; /* Police plus grasse si dispo */
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #aaa !important;
+        text-shadow: 1px 1px 2px #000;
+    }
+    .mob-tab-btn.active {
+        color: var(--cr-gold) !important;
+        background: rgba(0,0,0,0.2) !important;
+        border-bottom: 4px solid var(--cr-gold) !important;
+    }
+    /* Cartes principales mobile (Stats, etc.) */
+    .mob-card {
+        background: rgba(24, 48, 82, 0.85) !important; /* Bleu semi-transparent */
+        border: 3px solid var(--cr-blue-light) !important;
+        border-radius: var(--cr-border-radius) !important;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.1) !important;
+        backdrop-filter: blur(10px); /* Effet verre dépoli */
+    }
+    /* Gros titres et valeurs sur mobile */
+    #mobName, .mob-val {
+        text-shadow: var(--cr-text-outline) !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px;
+    }
+    #mobImg {
+        border: 5px solid var(--cr-gold) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.6) !important;
+    }
+
+    /* Journal Mobile style "Parchemin magique" */
+    .mob-journal-entry {
+        background: linear-gradient(135deg, #2c3e50, #1a252f) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-left: 6px solid var(--info) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.3) !important;
+    }
+    .mob-journal-title {
+        color: var(--cr-gold) !important;
+    }
+    
+    /* Modales */
+    .modal-content {
+        background: var(--cr-blue-dark) !important;
+        border: 4px solid var(--cr-blue-light) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8) !important;
+    }
+
+    /* --- CHAT BULLES --- */
+    .msg-bubble {
+        box-shadow: 0 3px 5px rgba(0,0,0,0.3) !important;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .msg-bubble.right { background: linear-gradient(to bottom left, #2980b9, #1c5a85) !important; }
+    .msg-bubble.left { background: linear-gradient(to bottom right, #444, #333) !important; }
+</style>
