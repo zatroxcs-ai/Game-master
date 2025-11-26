@@ -221,3 +221,63 @@ header { background-color: var(--primary); padding: 0 10px; display: flex; justi
 .relation-target select { width: auto; flex: 1; cursor: pointer; font-weight: bold;}
 .relation-target input { flex: 2; }
 .relation-target b { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ================= VISUAL EFFECTS (Clash Style) ================= */
+
+/* L'écran sombre qui bloque tout */
+#cr-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); z-index: 9999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Le conteneur de l'effet pour centrer */
+.cr-effect-container {
+    position: relative; width: 300px; height: 400px;
+    display: flex; justify-content: center; align-items: center;
+}
+
+/* Les rayons de lumière dorés qui tournent derrière */
+.cr-burst {
+    position: absolute; width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,165,0,0) 70%);
+    mask-image: repeating-conic-gradient(black 0deg, black 15deg, transparent 15deg, transparent 30deg);
+    -webkit-mask-image: repeating-conic-gradient(black 0deg, black 15deg, transparent 15deg, transparent 30deg);
+    animation: crRotate 10s linear infinite;
+    z-index: 1; opacity: 0.7;
+}
+
+/* La carte elle-même qui surgit */
+.cr-new-card-pop {
+    width: 180px; z-index: 10;
+    filter: drop-shadow(0 0 20px rgba(255,215,0,0.8));
+    animation: crPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Le gros texte au-dessus */
+.cr-title-pop {
+    position: absolute; top: -80px; width: 100%; text-align: center;
+    color: #ffd700; font-family: 'Arial Black', sans-serif; font-size: 2em; font-weight: 900;
+    text-transform: uppercase; text-shadow: 3px 3px 0 #000, -3px -3px 0 #000, 0 0 20px rgba(255,215,0,0.5);
+    animation: slideDown 0.5s ease-out 0.2s backwards; z-index: 12;
+    white-space: nowrap;
+}
+
+/* Le nom de la carte en dessous */
+.cr-name-pop {
+    position: absolute; bottom: -60px; width: 100%; text-align: center;
+    color: white; font-size: 1.5em; font-weight: bold;
+    text-shadow: 2px 2px 4px #000; z-index: 12;
+    animation: fadeIn 0.5s ease-out 0.6s backwards;
+}
+
+/* --- Animations Clés --- */
+@keyframes crRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); }}
+@keyframes crPop { 
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes slideDown { from { transform: translateY(-50px); opacity:0; } to { transform: translateY(0); opacity:1; }}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; }}

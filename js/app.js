@@ -661,5 +661,43 @@ function renderMapPins() {
     });
 }
 
+// ============================================================
+// EFFETS VISUELS (CLASH STYLE)
+// ============================================================
+
+// Fonction à appeler pour déclencher l'effet visuel sur le mobile
+function playClashCardEffect(cardId) {
+    // 1. Trouver la carte dans la base de données
+    const card = gameData.cards.find(c => c.id === cardId);
+    // Si la carte n'existe pas ou pas d'image, on utilise un "placeholder" générique
+    const imgUrl = card ? card.img : 'https://via.placeholder.com/150?text=Carte';
+    const cardName = card ? card.name : 'Nouvel Objet';
+
+    // 2. Créer la structure HTML de l'effet
+    const overlay = document.createElement('div');
+    overlay.id = 'cr-overlay';
+    // Au clic, on ferme l'animation plus vite
+    overlay.onclick = function() { document.body.removeChild(overlay); };
+
+    overlay.innerHTML = `
+        <div class="cr-effect-container">
+            <div class="cr-title-pop">NOUVELLE CARTE !</div>
+            <div class="cr-burst"></div>
+            <img src="${imgUrl}" class="cr-new-card-pop">
+            <div class="cr-name-pop">${cardName}</div>
+        </div>
+    `;
+
+    // 3. Ajouter à la page (ça lance les animations CSS automatiquement)
+    document.body.appendChild(overlay);
+
+    // 4. Supprimer automatiquement après 4 secondes si le joueur n'a pas cliqué
+    setTimeout(() => {
+        if (document.body.contains(overlay)) {
+            document.body.removeChild(overlay);
+        }
+    }, 4000);
+}
+
 client.check();
 setTimeout(() => { initMapInteraction(); }, 1000);
