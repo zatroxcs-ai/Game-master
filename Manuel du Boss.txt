@@ -1,0 +1,92 @@
+==============================================================================
+👑  MANAGER ROYALE - LE GUIDE DU MAÎTRE DU JEU  👑
+"Gérez votre Royaume, vos Troupes et vos Joueurs d'une main de fer."
+==============================================================================
+
+Bienvenue, Maître du Jeu !
+Cet outil est votre tour de contrôle. Il transforme votre navigateur en une table 
+de jeu virtuelle (VTT) connectée en temps réel aux téléphones de vos joueurs.
+
+Voici comment lancer votre première partie sans encombre.
+
+------------------------------------------------------------------------------
+1. 🛠️ L'INITIALISATION (À faire une seule fois)
+------------------------------------------------------------------------------
+Pour que la magie du "Temps Réel" opère, le jeu a besoin d'un cerveau dans le Cloud.
+///// DEJA FAIT  //////
+1. Créez un projet gratuit sur supabase.com.
+2. Allez dans "Settings" > "API".
+3. Copiez deux infos : 
+   - L'URL du projet (Project URL).
+   - La Clé Publique (anon / public API Key).
+4. Ouvrez `index.html` dans votre navigateur.
+5. Cliquez sur le bouton "☁️ CONFIG" en haut à droite.
+6. Collez vos clés et validez.
+////////////////////////////////////////////
+>> Le point rouge "● Offline" deviendra vert "🟢 Online". Vous êtes prêt !
+
+------------------------------------------------------------------------------
+2. ⚔️ CRÉATION DES SEIGNEURS (Vos Joueurs)
+------------------------------------------------------------------------------
+Avant que vos amis n'arrivent, préparez le terrain.
+
+1. Allez dans l'onglet "👑 Joueurs".
+2. Cliquez sur "+ Nouveau".
+3. Remplissez la fiche : Nom, Avatar (un lien image), Or de départ...
+4. Cliquez sur "Enregistrer".
+
+ASTUCE : Vous pouvez aussi créer des cartes personnalisées (Sorts, Objets) en 
+cliquant sur "+ Cartes" puis sur le bouton vert "+ CRÉER UNE NOUVELLE CARTE".
+
+------------------------------------------------------------------------------
+3. 📱 LE RALLIEMENT (Connexion des Joueurs)
+------------------------------------------------------------------------------
+C'est le moment magique. Vos joueurs n'ont rien à installer.
+
+1. Dans la liste des joueurs (sur votre écran), repérez le petit bouton "📱" 
+   à côté du nom du joueur.
+2. Cliquez dessus : un QR Code géant apparaît.
+3. Demandez au joueur de scanner ce code avec son téléphone.
+
+>> BOUM ! Son téléphone se transforme instantanément en fiche de personnage.
+Il voit son Or, son Inventaire, et la Carte du monde.
+
+------------------------------------------------------------------------------
+4. 🌍 GESTION DE L'ATLAS (La Carte)
+------------------------------------------------------------------------------
+Fini les "Vous êtes où déjà ?".
+
+1. Allez dans l'onglet "🌍 Carte".
+2. À gauche (Barre latérale), vous avez la liste des cartes (Monde, Donjon...).
+3. Cliquez sur une carte pour l'afficher sur l'écran principal ET sur les 
+   téléphones des joueurs.
+4. Cliquez n'importe où sur la carte pour y téléporter un joueur.
+
+ASTUCE : Vous pouvez ajouter vos propres cartes en collant l'URL d'une image 
+(lien .png/.jpg) dans le champ en bas à gauche.
+
+Ajoute une image dans le dossiers Game master en .png avec le nom qui correspond plus qu'a ecrire dans le champ en bas a gauche "exemple.png" appuie sur entrée. 
+
+------------------------------------------------------------------------------
+5. 💬 LE CORBEAU (Messagerie)
+------------------------------------------------------------------------------
+Pour les secrets et les complots.
+
+- Onglet "💬 Chat" : Vous voyez tout.
+- Canal "Global" : Pour parler à tout le monde.
+- Cliquez sur le nom d'un joueur à gauche pour voir ses messages privés 
+  (ou pour lui chuchoter une information secrète en tant que MJ).
+
+------------------------------------------------------------------------------
+6. 💾 SAUVEGARDE
+------------------------------------------------------------------------------
+Le système sauvegarde automatiquement à chaque action majeure (changement d'or, 
+déplacement, nouveau message).
+
+Cependant, par sécurité, vous avez un bouton "💾 SAUVER" en haut à droite. 
+Abusez-en après avoir écrit un long texte dans le Journal !
+
+------------------------------------------------------------------------------
+BON JEU !
+Que l'Élixir coule à flots et que vos tours restent debout.
+==============================================================================

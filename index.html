@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manager Royale V18.5 - Journal Fixed</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #2c3e50; 
+            --secondary: #34495e; 
+            --accent: #f39c12;
+            --danger: #e74c3c; 
+            --success: #27ae60; 
+            --info: #3498db;
+            --text: #ecf0f1; 
+            --bg: #121212; 
+            --panel-bg: #1e1e1e; 
+            --input-bg: #333;
+            --npc-color: #d35400; 
+            --log-bg: #000;
+            --msg-me: #2980b9; 
+            --msg-other: #444; 
+            --msg-private: #8e44ad;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0;
+            background-color: var(--bg); color: var(--text);
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-tabs { display: flex; gap: 5px; height: 100%; align-items: flex-end; }
+        .tab-btn {
+            background: #1a252f; color: #bdc3c7; border: none;
+            padding: 10px 15px; cursor: pointer; font-weight: bold; font-size: 0.9em;
+            border-radius: 8px 8px 0 0; transition: all 0.2s; white-space: nowrap;
+            border-top: 3px solid transparent; margin-bottom: 0;
+        }
+        .tab-btn:hover { background: #34495e; color: white; }
+        .tab-btn.active {
+            background: var(--panel-bg); color: var(--accent);
+            border-top: 3px solid var(--accent); height: 50px;
+            margin-bottom: -3px; z-index: 10;
+        }
+
+        /* --- LAYOUT --- */
+        .view-section { display: none; flex: 1; height: calc(100vh - 60px); width: 100%; position: relative; }
+        .view-section.active { display: flex; }
+        
+        .split-layout { display: flex; height: 100%; width: 100%; }
+        .list-panel { flex: 0 0 300px; border-right: 1px solid #444; padding: 15px; overflow-y: auto; background: #141414; }
+        .detail-panel { flex: 1; padding: 25px; overflow-y: auto; background: var(--panel-bg); }
+
+        /* --- ITEMS --- */
+        .list-card-item {
+            background: #2c3e50; padding: 10px; margin-bottom: 8px;
+            border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap:10px;
+            border-left: 4px solid transparent; transition: background 0.2s;
+        }
+        .list-card-item:hover { background: #34495e; }
+        .list-card-item.selected { background: #34495e; border-left-color: var(--accent); }
+        .list-card-item.npc { border-left-color: var(--npc-color); }
+        
+        .avatar-circle { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #555; background: #000; }
+        .btn-qr { background: #8e44ad; border:none; color:white; padding:5px 10px; border-radius:4px; cursor:pointer; margin-left:auto; }
+
+        /* --- FORMULAIRES --- */
+        h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 10px;}
+        label { display: block; margin-top: 10px; font-size: 0.85em; color: #aaa; text-transform: uppercase; margin-bottom: 5px; }
+        input, select, textarea { padding: 10px; border-radius: 4px; border: 1px solid #555; background-color: var(--input-bg); color: white; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+        
+        .action-btn { background-color: #444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight:bold; margin-right:5px;}
+        .save-btn { background-color: var(--success); }
+        .reset-btn { background-color: var(--danger); }
+
+        /* --- ATLAS & MAP --- */
+        .map-sidebar { width: 220px; background: #151515; border-right: 1px solid #444; display: flex; flex-direction: column; }
+        .map-list { flex: 1; overflow-y: auto; }
+        .map-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #333; font-size: 0.9em; color: #aaa; display:flex; align-items:center; gap:10px; }
+        .map-item:hover { background: #222; color: white; }
+        .map-item.active { background: var(--primary); color: white; border-left: 4px solid var(--accent); }
+        .map-view-area { flex: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .map-controls { padding: 10px; border-top: 1px solid #333; background: #111; display: flex; flex-direction: column; gap: 5px; }
+        
+        .full-map-container { width: 100%; height: 100%; position: relative; display: flex; justify-content: center; align-items: center; }
+        .world-map { width: 100%; height: 100%; object-fit: contain; }
+        
+        .map-marker {
+            position: absolute; width: 40px; height: 40px; border-radius: 50%;
+            border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%); cursor: pointer; transition: all 0.3s ease; z-index: 10;
+            background-size: cover; background-position: center; background-color: #000;
+        }
+        .map-marker:hover { transform: translate(-50%, -50%) scale(1.3); z-index: 20; border-color: var(--accent); }
+        .map-marker .tooltip {
+            visibility: hidden; background: rgba(0,0,0,0.8); color: #fff;
+            text-align: center; border-radius: 4px; padding: 5px;
+            position: absolute; bottom: 110%; left: 50%; 
+            transform: translateX(-50%); white-space: nowrap; font-size: 0.8em; pointer-events: none;
+        }
+        .map-marker:hover .tooltip { visibility: visible; }
+
+        /* --- CHAT --- */
+        .chat-container { display: flex; flex-direction: column; height: 100%; background: #111; }
+        .chat-feed { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .chat-input-area { background: #222; padding: 10px; display: flex; gap: 10px; align-items: center; border-top: 1px solid #444; }
+        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.95em; position: relative; word-wrap: break-word; }
+        .msg-bubble.left { align-self: flex-start; background: var(--msg-other); border-bottom-left-radius: 2px; }
+        .msg-bubble.right { align-self: flex-end; background: var(--msg-me); border-bottom-right-radius: 2px; }
+        .msg-bubble.private { border: 1px solid var(--msg-private); }
+        .private-tag { font-size: 0.7em; background: var(--msg-private); padding: 2px 4px; border-radius: 3px; color: white; margin-right: 5px; }
+
+        /* --- MOBILE --- */
+        #client-view { display: none; height: 100vh; width: 100%; flex-direction: column; background: #000; }
+        .mob-header { background-color: var(--primary); height: 60px; flex-shrink: 0; display: flex; justify-content: center; align-items: flex-end; border-bottom: 3px solid var(--accent); }
+        .mob-tab-btn { flex: 1; border-radius: 0; margin: 0; text-align: center; height: 100%; border-top:none; border-bottom: 3px solid transparent; display: flex; align-items: center; justify-content: center; }
+        .mob-tab-btn.active { background: #222; border-bottom: 3px solid var(--accent); color: var(--accent); border-top: none; }
+        .mob-container { display: none; flex-direction: column; height: 100%; width: 100%; overflow: hidden; }
+        .mob-container.active { display: flex; }
+        .mob-scroll-content { padding: 20px; overflow-y: auto; height: 100%; width: 100%; box-sizing: border-box; }
+        .mob-card { background: #222; padding: 15px; border-radius: 10px; border: 1px solid #444; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+        .mob-val { font-size: 2.5em; font-weight: bold; color: var(--accent); }
+        .mob-label { color: #888; font-size: 0.9em; text-transform: uppercase; }
+        
+        .mob-journal-entry { background: #1a1a1a; border-left: 3px solid var(--info); padding: 15px; margin-bottom: 15px; border-radius: 0 8px 8px 0; text-align: left; }
+        .mob-journal-date { font-size: 0.8em; color: var(--accent); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .mob-journal-title { font-size: 1.2em; font-weight: bold; color: white; margin-bottom: 10px; }
+        .mob-journal-content { color: #ccc; line-height: 1.5; font-family: serif; font-size: 1.05em; white-space: pre-wrap; }
+
+        /* --- HEADER MJ --- */
+        header { background-color: var(--primary); padding: 0 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--accent); height: 60px; flex-shrink: 0; overflow-x: auto; }
+        .controls-area { display: flex; align-items: center; gap: 10px; margin-left: 10px;}
+        
+        /* --- MODALS & EXTRAS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: var(--panel-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--accent); max-width: 500px; width: 90%; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close-modal { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 1.2em; }
+        
+        /* --- CARDS GRID --- */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; padding: 10px; }
+        .grid-card { cursor: pointer; text-align: center; padding: 5px; border: 1px solid transparent; border-radius: 5px; position: relative; }
+        .grid-card:hover { border-color: var(--accent); background: #333; }
+        .grid-card img { width: 100%; display: block; }
+        
+        .card-edit-btn { 
+            position: absolute; top: 2px; right: 2px; 
+            background: rgba(0,0,0,0.7); color: #fff; 
+            border: none; border-radius: 50%; width: 24px; height: 24px; 
+            font-size: 14px; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center;
+        }
+        .card-edit-btn:hover { background: var(--accent); }
+
+        .visual-inv-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 8px; min-height: 60px; border: 1px dashed #555; }
+        .cr-card-mini { width: 60px; height: 75px; cursor: pointer; position: relative; }
+        .cr-card-mini img { width: 100%; height: 100%; object-fit: contain; }
+        .remove-card-btn { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        
+        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--success); color: white; padding: 10px 20px; border-radius: 5px; display: none; z-index: 1000; }
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 5px; color: #ddd; }
+        .relation-target { background: #252525; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; align-items: center; gap: 10px; }
+		
+		/* --- CSS ADDITIONNEL (TOOLTIP DECK) --- */
+		.cr-card-mini .card-tooltip {
+		visibility: hidden;
+		opacity: 0;
+		position: absolute;
+		bottom: 105%; left: 50%; transform: translateX(-50%);
+		width: 200px;
+		background: rgba(0, 0, 0, 0.95);
+		border: 1px solid var(--accent);
+		border-radius: 8px;
+		padding: 10px;
+		z-index: 9999;
+		box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+		pointer-events: none; /* Permet de cliquer au travers */
+		transition: opacity 0.2s;
+		text-align: center;
+}	
+
+	/* La flèche du bas de la bulle */
+	.cr-card-mini .card-tooltip::after {
+    content: "";
+    position: absolute; top: 100%; left: 50%; margin-left: -5px;
+    border-width: 5px; border-style: solid;
+    border-color: var(--accent) transparent transparent transparent;
+}
+
+	/* Afficher au survol */
+	.cr-card-mini:hover .card-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+	/* Style du contenu */
+	.tooltip-header { color: var(--accent); font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid #444; padding-bottom: 3px; }
+	.tooltip-stats { display: flex; justify-content: space-around; font-size: 0.85em; margin-bottom: 5px; color: #ddd; }
+	.tooltip-desc { font-size: 0.8em; font-style: italic; color: #aaa; line-height: 1.3; text-align: justify;}
+	
+	/* --- CSS ADDITIONNEL (RELATIONS VISUELLES) --- */
+	/* Modifie légèrement le conteneur existant pour l'alignement */
+	.relation-target {
+    padding-left: 0 !important; /* On enlève le padding à gauche pour coller la barre */
+    overflow: hidden; /* Pour que la barre suive les coins arrondis */
+    gap: 15px; /* Un peu plus d'espace entre les éléments */
+}
+
+	/* La nouvelle barre de statut colorée */
+	.rel-status-bar {
+    width: 12px;
+    align-self: stretch; /* Prend toute la hauteur */
+    background: #444; /* Couleur par défaut (Inconnu) */
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+	/* Les couleurs selon le statut */
+	/* Vert pour Amical */
+	.rel-status-bar.status-Amical { background: #27ae60; box-shadow: 2px 0 10px rgba(39, 174, 96, 0.3); }
+	/* Gris/Bleu neutre */
+	.rel-status-bar.status-Neutre { background: #7f8c8d; }
+	/* Rouge vif pour Hostile */
+	.rel-status-bar.status-Hostile { background: #c0392b; box-shadow: 2px 0 10px rgba(192, 57, 43, 0.4); }
+	/* Bleu royal brillant pour Allié */
+	.rel-status-bar.status-Allie { background: #3498db; box-shadow: 2px 0 15px rgba(52, 152, 219, 0.5); border-right: 2px solid #fff; }
+
+	/* Ajustement des champs pour faire plus propre */
+	.relation-target select { width: auto; flex: 1; cursor: pointer; font-weight: bold;}
+	.relation-target input { flex: 2; }
+	.relation-target b { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">Sauvegarde effectuée !</div>
+
+    <div id="client-view">
+        <div class="mob-header">
+            <button id="tab-stats" class="tab-btn mob-tab-btn active" onclick="client.switchTab('stats')">📊 STATS</button>
+            <button id="tab-map" class="tab-btn mob-tab-btn" onclick="client.switchTab('map')">🌍 CARTE</button>
+            <button id="tab-journal" class="tab-btn mob-tab-btn" onclick="client.switchTab('journal')">📖 JRNL</button>
+            <button id="tab-chat" class="tab-btn mob-tab-btn" onclick="client.switchTab('chat')">💬 CHAT</button>
+        </div>
+
+        <div id="mob-stats" class="mob-container active">
+            <div class="mob-scroll-content">
+                <img id="mobImg" src="" style="width:120px; height:120px; border-radius:50%; border:4px solid var(--accent); margin:0 auto 10px auto; display:block; object-fit:cover; background:#333;">
+                <h1 id="mobName" style="color:var(--accent); margin:0; text-align:center;">Chargement...</h1>
+                <div style="margin-bottom:20px; color:#777; text-align:center;" id="mobRegion">-</div>
+                
+                <div style="display:flex; width:100%; gap:10px; margin-bottom:10px;">
+                    <div class="mob-card">
+                        <div class="mob-val" style="color:#f1c40f" id="mobGold">0</div>
+                        <div class="mob-label">Or</div>
+                    </div>
+                    <div class="mob-card">
+                        <div class="mob-val" style="color:#e91e63" id="mobElixir">0</div>
+                        <div class="mob-label">Élixir</div>
+                    </div>
+                </div>
+                <div class="mob-card">
+                    <div class="mob-label" style="border-bottom:1px solid #444; margin-bottom:5px;">Deck</div>
+                    <div id="mobDeckDisplay" style="display:flex; gap:5px; flex-wrap:wrap; justify-content:center; min-height:40px;"></div>
+                </div>
+                <div class="mob-card" style="text-align:left;">
+                    <div class="mob-label" style="margin-bottom:10px;">INVENTAIRE</div>
+                    <div id="mobInv" style="white-space: pre-wrap; font-size: 0.9em; color: #ddd;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mob-map" class="mob-container" style="background:#000;">
+            <div class="full-map-container">
+                <img src="map.png" class="world-map" onerror="this.src='https://via.placeholder.com/800x600?text=Carte+Non+Trouvee'">
+            </div>
+        </div>
+
+        <div id="mob-journal" class="mob-container">
+            <div id="mobJournalList" class="mob-scroll-content"></div>
+        </div>
+
+        <div id="mob-chat" class="mob-container">
+            <div id="mobChatFeed" class="chat-feed"></div>
+            <div class="chat-input-area">
+                <select id="mobChatTarget" style="width:110px; margin:0; font-size:0.8em;">
+                    <option value="global">Global</option>
+                    <option value="gm">Au MJ</option>
+                </select>
+                <input type="text" id="mobChatInput" placeholder="Message..." style="margin:0;">
+                <button class="action-btn" onclick="sendChatMessage('mobile')">Envoyer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gm-view" style="display:flex; flex-direction:column; height:100%;">
+        <header>
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchTab('view-map')">🌍 Carte</button>
+                <button class="tab-btn" onclick="switchTab('view-chat')">💬 Chat</button>
+                <button class="tab-btn" onclick="switchTab('view-players')">👑 Joueurs</button>
+                <button class="tab-btn" onclick="switchTab('view-npcs')">🎭 PNJ</button>
+                <button class="tab-btn" onclick="switchTab('view-relations')">🤝 Relations</button>
+                <button class="tab-btn" onclick="switchTab('view-journal')">📖 Journal</button>
+                <button class="tab-btn" onclick="switchTab('view-logs')">📜 Logs</button>
+            </div>
+            <div class="controls-area">
+                <span id="statusDot" style="color:red; font-size: 0.8em;">● Offline</span>
+                <button class="action-btn" onclick="document.getElementById('setupModal').style.display='flex'">☁️ CONFIG</button>
+                <button class="action-btn save-btn" onclick="saveData(true)">💾 SAUVER</button>
+            </div>
+        </header>
+
+        <div id="view-map" class="view-section active">
+            <div style="display: flex; width: 100%; height: 100%;">
+                <div class="map-sidebar">
+                    <div style="padding:10px; font-weight:bold; color:var(--accent); border-bottom:1px solid #333;">ATLAS</div>
+                    <div id="mapListContainer" class="map-list"></div>
+                    <div class="map-controls">
+                        <input type="text" id="newMapName" placeholder="Nom (ex: Enfers)" style="width:100%; margin:0; font-size:0.8em;">
+                        <button class="action-btn" onclick="mapManager.addMap()">+</button>
+                    </div>
+                    <div class="map-controls">
+                        <input type="text" id="editMapUrl" placeholder="URL Image .png" style="width:100%; margin:0; font-size:0.8em;" onchange="mapManager.updateUrl()">
+                    </div>
+                </div>
+                <div class="map-view-area">
+                    <div id="gmMapContainer" class="full-map-container">
+                        <img id="worldMapImg" src="" class="world-map" alt="Carte">
+                    </div>
+                    <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); padding:5px 10px; border-radius:4px; pointer-events:none;">
+                        <span id="currentMapLabel" style="color:white; font-weight:bold;">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-chat" class="view-section">
+            <div class="split-layout">
+                <div class="list-panel">
+                    <div class="list-card-item selected" onclick="loadGmChat('global')" id="chan-global"><b>🌍 Global</b></div>
+                    <div id="gmChatChannels"></div>
+                </div>
+                <div class="detail-panel" style="padding:0; display:flex; flex-direction:column;">
+                    <div style="padding:10px; background:#222; border-bottom:1px solid #444;" id="gmChatTitle">Global</div>
+                    <div id="gmChatFeed" class="chat-feed" style="background:#1a1a1a;"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="gmChatInput" placeholder="Message..." style="margin:0;">
+                        <button class="action-btn" onclick="sendChatMessage('gm')">Envoyer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-players" class="view-section">
+            <div class="split-layout">
+                <div class="list-panel">
+                    <button class="action-btn save-btn" style="width:100%; margin-bottom:10px;" onclick="newPlayerForm()">+ Nouveau</button>
+                    <div id="playersListContainer"></div>
+                </div>
+                <div class="detail-panel">
+                    <h3>Édition Seigneur</h3>
+                    <input type="hidden" id="pId">
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="pName" placeholder="Nom du Personnage">
+                        <input type="text" id="pImg" placeholder="Avatar URL">
+                    </div>
+                    <input type="text" id="pRegion" placeholder="Région actuelle">
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1"><label>Or</label><input type="number" id="pGold"></div>
+                        <div style="flex:1"><label>Élixir</label><input type="number" id="pElixir"></div>
+                        <div style="flex:1"><label>Noir</label><input type="number" id="pDark"></div>
+                    </div>
+                    <label>Inventaire</label>
+                    <textarea id="pTextInv" placeholder="..." style="height:80px;"></textarea>
+                    <label>Deck</label>
+                    <div id="pDeckContainer" class="visual-inv-box"></div>
+                    <button class="action-btn" style="width:100%; margin-top:5px; background:#444;" onclick="openCardSelectionModal('player')">+ Cartes</button>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="action-btn reset-btn" onclick="deleteEntity('players')">Supprimer</button>
+                        <button class="action-btn save-btn" onclick="savePlayer()">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-npcs" class="view-section">
+            <div class="split-layout">
+                <div class="list-panel">
+                    <button class="action-btn save-btn" style="width:100%; margin-bottom:10px; background:var(--npc-color);" onclick="newNPCForm()">+ Nouveau PNJ</button>
+                    <div id="npcsListContainer"></div>
+                </div>
+                <div class="detail-panel">
+                    <h3 style="color:var(--npc-color)">Édition PNJ</h3>
+                    <input type="hidden" id="nId">
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="nName" placeholder="Nom du PNJ">
+                        <input type="text" id="nType" placeholder="Rôle">
+                    </div>
+                    <input type="text" id="nImg" placeholder="Avatar URL">
+                    <textarea id="nStory" placeholder="Histoire..." style="height:80px;"></textarea>
+                    <label>Deck / Objets</label>
+                    <div id="nDeckContainer" class="visual-inv-box"></div>
+                    <button class="action-btn" style="width:100%; margin-top:5px; background:#444;" onclick="openCardSelectionModal('npc')">+ Cartes</button>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="action-btn reset-btn" onclick="deleteEntity('npcs')">Supprimer</button>
+                        <button class="action-btn save-btn" style="background:var(--npc-color)" onclick="saveNPC()">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-relations" class="view-section">
+            <div class="split-layout">
+                <div class="list-panel">
+                    <div id="relSubjectList"></div>
+                </div>
+                <div class="detail-panel">
+                    <h3 id="relTitle">Sélectionnez...</h3>
+                    <div id="relContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-journal" class="view-section">
+            <div class="split-layout">
+                <div class="list-panel">
+                    <button class="action-btn save-btn" style="width:100%; margin-bottom:10px;" onclick="newJournalForm()">+ Nouvelle Entrée</button>
+                    <div id="journalListContainer"></div>
+                </div>
+                <div class="detail-panel">
+                    <input type="hidden" id="jId">
+                    <input type="text" id="jTitle" placeholder="Titre">
+                    <input type="text" id="jDate" placeholder="Date">
+                    <label>Participants</label>
+                    <div id="jParticipantsContainer" class="visual-inv-box" style="border:none; display:flex; flex-wrap:wrap;"></div>
+                    <textarea id="jContent" placeholder="Récit..." style="height:250px; margin-top:10px;"></textarea>
+                    <button class="action-btn save-btn" onclick="saveJournal()">Sauvegarder</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-logs" class="view-section">
+            <div class="log-container"><div id="logOutput"></div></div>
+            <div style="padding:10px; background:#222; display:flex; gap:10px;">
+                <input type="text" id="customLogInput" placeholder="Log manuel..." style="margin:0;">
+                <button class="action-btn" onclick="addManualLog()">Ajouter</button>
+                <button class="action-btn reset-btn" onclick="clearLogs()">Vider</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="setupModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="document.getElementById('setupModal').style.display='none'">&times;</span>
+            <h3>Connexion Supabase</h3>
+            <input type="text" id="sbUrl" placeholder="URL">
+            <input type="text" id="sbKey" placeholder="Key">
+            <button class="action-btn save-btn" onclick="cloud.setup()">Connecter</button>
+        </div>
+    </div>
+
+    <div id="qrModal" class="modal-overlay" onclick="this.style.display='none'">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3>Scanner</h3>
+            <div id="qrcode" style="background:white; padding:10px; display:inline-block; margin:10px 0;"></div>
+        </div>
+    </div>
+
+    <div id="cardSelectionModal" class="modal-overlay">
+        <div class="modal-content" style="max-width:600px;">
+            <span class="close-modal" onclick="document.getElementById('cardSelectionModal').style.display='none'">&times;</span>
+            <h3>Ajouter Carte</h3>
+            <button class="action-btn save-btn" style="width:100%; margin-bottom:15px; background:#27ae60; padding:15px;" onclick="newCustomCard()">
+                + CRÉER UNE NOUVELLE CARTE (DB)
+            </button>
+            <div id="cardsGrid" class="cards-grid"></div>
+        </div>
+    </div>
+
+    <div id="createCardModal" class="modal-overlay" style="z-index:200">
+        <div class="modal-content">
+            <h3>✨ Éditer Carte</h3>
+            <input type="hidden" id="ccId">
+            <input type="text" id="ccName" placeholder="Nom (ex: Dragon)">
+            <input type="text" id="ccImg" placeholder="URL Image">
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="ccElixir" placeholder="Coût" style="flex:1">
+                <select id="ccType" style="flex:1">
+                    <option>Troupe</option>
+                    <option>Sort</option>
+                    <option>Bâtiment</option>
+                    <option>Objet</option>
+                </select>
+            </div>
+            <textarea id="ccDesc" placeholder="Description..." style="height:80px;"></textarea>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="action-btn reset-btn" id="btnDeleteCard" style="display:none;" onclick="deleteCustomCard()">Supprimer</button>
+                <button class="action-btn" onclick="document.getElementById('createCardModal').style.display='none'">Annuler</button>
+                <button class="action-btn save-btn" onclick="saveCustomCard()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mapMenuModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="document.getElementById('mapMenuModal').style.display='none'">&times;</span>
+            <h3>Déplacer qui ici ?</h3>
+            <div id="mapPlayerButtons" style="display:flex; flex-direction:column; gap:5px; max-height:300px; overflow-y:auto;"></div>
+            <button class="action-btn reset-btn" style="margin-top:10px; width:100%" onclick="document.getElementById('mapMenuModal').style.display='none'">Annuler</button>
+        </div>
+    </div>
+
+<script>
+    // === DATA MODEL ===
+    let gameData = {
+        players: [],
+        npcs: [],
+        journal: [],
+        logs: [],
+        relations: [],
+        chat: [],
+        maps: [
+            { id: 'root', name: 'Monde Principal', img: 'map.png' },
+            { id: 'enfers', name: 'Royaume des Enfers', img: 'enfers.png' } 
+        ],
+        activeMapId: 'root',
+        cards: [ 
+            {id:'c1', name:'Chevalier', img:'https://wsrv.nl/?url=https://static.wikia.nocookie.net/clashroyale/images/a/a2/KnightCard.png&h=100'},
+            {id:'c2', name:'Archers', img:'https://wsrv.nl/?url=https://static.wikia.nocookie.net/clashroyale/images/d/d4/ArchersCard.png&h=100'},
+            {id:'c3', name:'Géant', img:'https://wsrv.nl/?url=https://static.wikia.nocookie.net/clashroyale/images/e/ec/GiantCard.png&h=100'},
+            {id:'c4', name:'Mousquetaire', img:'https://wsrv.nl/?url=https://static.wikia.nocookie.net/clashroyale/images/6/60/MusketeerCard.png&h=100'},
+            {id:'c5', name:'Mini P.E.K.K.A', img:'https://wsrv.nl/?url=https://static.wikia.nocookie.net/clashroyale/images/1/1a/MiniPEKKACard.png&h=100'},
+            {id:'c6', name:'Prince', img:'https://wsrv.nl/?url=https://static.wikia.nocookie.net/clashroyale/images/f/f3/PrinceCard.png&h=100'},
+            {id:'c7', name:'Bébé Dragon', img:'https://wsrv.nl/?url=https://static.wikia.nocookie.net/clashroyale/images/9/90/BabyDragonCard.png&h=100'},
+            {id:'c8', name:'Armée de Squelettes', img:'https://wsrv.nl/?url=https://static.wikia.nocookie.net/clashroyale/images/7/70/SkeletonArmyCard.png&h=100'},
+            {id:'i1', name:'Potion de Soin', img:'https://via.placeholder.com/100/e74c3c/fff?text=Soin'},
+            {id:'i2', name:'Parchemin', img:'https://via.placeholder.com/100/f1c40f/000?text=Quest'}
+        ],
+        sessionId: localStorage.getItem('royale_sess_id') || 'sess-'+Date.now()
+    };
+    if(!localStorage.getItem('royale_sess_id')) localStorage.setItem('royale_sess_id', gameData.sessionId);
+
+    function debugMob(msg, color='red') {
+        const el = document.getElementById('mobRegion'); const params = new URLSearchParams(window.location.search);
+        if(el && params.get('mode') === 'client' && !el.innerHTML.includes(msg)) el.innerHTML += `<br><span style="color:${color}; font-size:0.8em">${msg}</span>`;
+    }
+
+    // === CLOUD ===
+    const cloud = {
+        client: null,
+        setup: () => {
+            const u = document.getElementById('sbUrl').value.trim();
+            const k = document.getElementById('sbKey').value.trim();
+            if(!u || !k) { alert("Champs vides !"); return; }
+            localStorage.setItem('sb_url',u); 
+            localStorage.setItem('sb_key',k); 
+            location.reload(); 
+        },
+        init: () => {
+            const u = localStorage.getItem('sb_url');
+            const k = localStorage.getItem('sb_key');
+            if(typeof supabase === 'undefined') { debugMob("Supabase manquant"); return; }
+            if(u && k) {
+                try {
+                    cloud.client = supabase.createClient(u, k);
+                    cloud.pull();
+                    cloud.client.channel('public:sessions').on('postgres_changes', 
+                        { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${gameData.sessionId}` }, 
+                        payload => { 
+                            if(payload.new && payload.new.data) { 
+                                gameData = payload.new.data; 
+                                refreshGameData(); 
+                            } 
+                        }).subscribe(s => {
+                            if(s==='SUBSCRIBED') { 
+                                const dot = document.getElementById('statusDot'); 
+                                if(dot) { dot.innerText = "🟢 Online"; dot.style.color = "#2ecc71"; } 
+                            }
+                        });
+                } catch(e) { debugMob("Init Err: " + e.message); }
+            }
+        },
+        push: async () => { 
+            if(!cloud.client) return; 
+            await cloud.client.from('sessions').upsert({ id: gameData.sessionId, data: gameData }); 
+        },
+        pull: async () => {
+            if(!cloud.client) return;
+            const {data} = await cloud.client.from('sessions').select('data').eq('id', gameData.sessionId).single();
+            if(data) { 
+                gameData = data.data; 
+                refreshGameData(); 
+            } else {
+                cloud.push();
+            }
+        }
+    };
+
+    function refreshGameData() {
+        gameData.players = gameData.players || [];
+        gameData.npcs = gameData.npcs || [];
+        gameData.logs = gameData.logs || [];
+        gameData.relations = gameData.relations || [];
+        gameData.chat = gameData.chat || [];
+        gameData.maps = gameData.maps || [{ id: 'root', name: 'Monde Principal', img: 'map.png' }];
+
+        mapManager.renderList();
+        renderMapPins();
+
+        const params = new URLSearchParams(window.location.search);
+        if(params.get('mode') === 'client') {
+            client.render(gameData);
+            const r = document.getElementById('mobRegion'); 
+            const p = gameData.players.find(x => x.id === parseInt(params.get('id')));
+            if(p && r.innerHTML.includes("reçues")) r.innerHTML = p.region || "-";
+        } else {
+            ui.refreshAll();
+        }
+    }
+
+    // === CHAT ===
+    let currentGmChannel = 'global';
+    function sendChatMessage(source) {
+        let text, fromId, toId, senderName;
+        if(source === 'mobile') {
+            text = document.getElementById('mobChatInput').value;
+            const params = new URLSearchParams(window.location.search); 
+            fromId = parseInt(params.get('id'));
+            const p = gameData.players.find(x => x.id === fromId);
+            if(!p || !text) return;
+            senderName = p.name; 
+            toId = document.getElementById('mobChatTarget').value;
+            document.getElementById('mobChatInput').value = "";
+        } else {
+            text = document.getElementById('gmChatInput').value; 
+            if(!text) return;
+            fromId = 'gm'; 
+            senderName = 'MJ'; 
+            toId = currentGmChannel === 'global' ? 'global' : parseInt(currentGmChannel);
+            document.getElementById('gmChatInput').value = "";
+        }
+        gameData.chat.push({ 
+            id: Date.now(), from: fromId, to: toId, name: senderName, text: text, 
+            time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}) 
+        });
+        if(gameData.chat.length > 100) gameData.chat.shift(); 
+        cloud.push(); 
+        refreshGameData();
+    }
+
+    function renderChat(containerId, viewerId) {
+        const c = document.getElementById(containerId); c.innerHTML = "";
+        const isGm = viewerId === 'gm'; const filterId = isGm ? currentGmChannel : viewerId;
+        gameData.chat.forEach(msg => {
+            let show = false, isPrivate = false;
+            if(isGm) {
+                if(filterId === 'global') { if(msg.to === 'global') show = true; }
+                else { const tId = parseInt(filterId); if(msg.from === tId || msg.to === tId) { show = true; if(msg.to !== 'global') isPrivate = true; } }
+            } else {
+                if(msg.to === 'global') show = true; else if(msg.from === viewerId || msg.to == viewerId) { show = true; isPrivate = true; }
+            }
+            if(show) {
+                const isMe = msg.from === viewerId; const align = isMe ? 'right' : 'left';
+                let content = ``;
+                if(isPrivate) {
+                    let label = "Privé";
+                    if(isGm && msg.to !== 'gm' && msg.from !== 'gm' && msg.from !== parseInt(filterId)) { const t = gameData.players.find(x=>x.id==msg.to); label = `à ${t?t.name:'?'}`; }
+                    content += `<span class="private-tag">🔒 ${label}</span>`;
+                }
+                content += `<b>${msg.name}</b><br>${msg.text}<div class="msg-meta">${msg.time}</div>`;
+                c.innerHTML += `<div class="msg-bubble ${align} ${isPrivate?'private':''}">${content}</div>`;
+            }
+        });
+        c.scrollTop = c.scrollHeight;
+    }
+
+    // === CLIENT ===
+    const client = {
+        check: () => {
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('mode') === 'client') {
+                document.getElementById('gm-view').style.display = 'none'; 
+                document.getElementById('client-view').style.display = 'flex'; 
+                document.title = "Jeu en cours";
+                try {
+                    let u = atob(params.get('u')), k = atob(params.get('k'));
+                    localStorage.setItem('sb_url', u); localStorage.setItem('sb_key', k); gameData.sessionId = params.get('s'); cloud.init();
+                } catch(e) { document.getElementById('mobName').innerText = "ERREUR LIEN"; }
+            } else cloud.init();
+        },
+        render: (d) => {
+            const id = parseInt(new URLSearchParams(window.location.search).get('id'));
+            const p = d.players.find(x => x.id === id);
+            if(p) {
+                document.getElementById('mobName').innerText = p.name;
+                document.getElementById('mobImg').src = p.img || "https://via.placeholder.com/150";
+                const regionEl = document.getElementById('mobRegion');
+                if(!regionEl.innerHTML.includes("Erreur")) regionEl.innerText = p.region || "Inconnu";
+                document.getElementById('mobGold').innerText = p.gold; 
+                document.getElementById('mobElixir').innerText = p.elixir;
+                document.getElementById('mobInv').innerText = p.inv || "";
+                
+                const md = document.getElementById('mobDeckDisplay'); md.innerHTML = "";
+                if(p.deck && p.deck.length>0) {
+                    p.deck.forEach(cid => { 
+                        const c=gameData.cards.find(x=>x.id==cid); 
+                        if(c) md.innerHTML+=`<img src="${c.img}" style="width:40px; height:50px; object-fit:contain;">`; 
+                    });
+                } else md.innerHTML = "<small style='color:#555'>Aucune carte</small>";
+                
+                const sel = document.getElementById('mobChatTarget');
+                const curr = sel.value;
+                sel.innerHTML = `<option value="global">Global</option><option value="gm">Au MJ</option>`;
+                d.players.forEach(o => { if(o.id !== id) sel.innerHTML += `<option value="${o.id}">à ${o.name}</option>`; });
+                sel.value = curr; 
+                renderChat('mobChatFeed', id);
+
+                const jCont = document.getElementById('mobJournalList'); jCont.innerHTML = "";
+                (d.journal || []).sort((a,b)=>b.id-a.id).forEach(j => {
+                    jCont.innerHTML += `
+                        <div class="mob-journal-entry">
+                            <div class="mob-journal-date">${j.date}</div>
+                            <div class="mob-journal-title">${j.title}</div>
+                            <div class="mob-journal-content">${j.content}</div>
+                        </div>`;
+                });
+            }
+        },
+        switchTab: (t) => {
+            document.querySelectorAll('.mob-container').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.mob-tab-btn').forEach(e => e.classList.remove('active'));
+            document.getElementById('mob-'+t).classList.add('active'); 
+            document.getElementById('tab-'+t).classList.add('active');
+        }
+    };
+
+    // === MJ ===
+    let currentDeck = [], editingType = 'player', selectedRelationSubject = null;
+    const ui = {
+        refreshAll: () => {
+            if(document.getElementById('gm-view').style.display === 'none') return;
+            renderPlayersList(); renderNPCsList(); renderJournalList(); renderLogs();
+            if(selectedRelationSubject) loadRelationsFor(selectedRelationSubject); 
+            else renderRelationSubjects();
+            
+            const cc = document.getElementById('gmChatChannels'); cc.innerHTML = "";
+            gameData.players.forEach(p => { 
+                const active = parseInt(currentGmChannel) === p.id ? 'selected' : '';
+                cc.innerHTML += `<div class="list-card-item ${active}" onclick="loadGmChat(${p.id}, '${p.name}')"><img src="${p.img}" class="avatar-circle"><b>${p.name}</b></div>`; 
+            });
+            document.getElementById('chan-global').className = `list-card-item ${currentGmChannel==='global'?'selected':''}`;
+            renderChat('gmChatFeed', 'gm');
+        },
+        showToast: () => { 
+            const t = document.getElementById('toast'); t.style.display='block'; 
+            setTimeout(()=>t.style.display='none', 2000); 
+        },
+        addLog: (msg) => { 
+            const t = new Date().toLocaleTimeString('fr-FR'); 
+            gameData.logs.push({ t: t, m: msg }); 
+            if(gameData.logs.length > 50) gameData.logs.shift(); 
+        }
+    };
+
+    function switchTab(t){
+        document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
+        document.getElementById(t).classList.add('active');
+        const map = {'view-map':0, 'view-chat':1, 'view-players':2, 'view-npcs':3, 'view-relations':4, 'view-journal':5, 'view-logs':6};
+        const btn = document.querySelectorAll('#gm-view .nav-tabs .tab-btn')[map[t]]; 
+        if(btn) btn.classList.add('active');
+        if(t === 'view-relations') renderRelationSubjects();
+    }
+    function saveData(notify=false) { if(notify) ui.addLog("Sauvegarde manuelle."); cloud.push(); }
+    function loadGmChat(id, name) { currentGmChannel = id; document.getElementById('gmChatTitle').innerText = name || "Global (Public)"; refreshGameData(); }
+
+    // --- PLAYERS ---
+    function renderPlayersList() { 
+        const c=document.getElementById('playersListContainer');
+        c.innerHTML=""; 
+        (gameData.players||[]).forEach(p=>{ 
+            const d = document.createElement('div'); 
+            d.className='list-card-item'; 
+            d.onclick = () => loadPlayer(p.id);
+            d.innerHTML=`<div style="display:flex;align-items:center;gap:10px;"><img src="${p.img||'https://via.placeholder.com/50'}" class="avatar-circle"><div><b>${p.name}</b><br><small style="color:var(--accent)">${p.gold} Or</small></div></div><button class="btn-qr" onclick="event.stopPropagation();genQR(${p.id})">📱</button>`; 
+            c.appendChild(d); 
+        }); 
+    }
+    
+    function newPlayerForm() { 
+        editingType='player'; 
+        document.getElementById('pId').value=""; 
+        ['pName','pImg','pRegion','pTextInv'].forEach(i=>document.getElementById(i).value=""); 
+        ['pGold','pElixir','pDark'].forEach(i=>document.getElementById(i).value=0); 
+        currentDeck=[]; 
+        renderCurrentDeck('pDeckContainer'); 
+    }
+    
+    function loadPlayer(id) { 
+        editingType='player'; 
+        const p=gameData.players.find(x=>x.id==id); 
+        document.getElementById('pId').value=p.id; 
+        document.getElementById('pName').value=p.name; 
+        document.getElementById('pImg').value=p.img; 
+        document.getElementById('pRegion').value=p.region; 
+        document.getElementById('pGold').value=p.gold; 
+        document.getElementById('pElixir').value=p.elixir; 
+        document.getElementById('pTextInv').value=p.inv; 
+        document.getElementById('pDark').value=p.dark || 0; 
+        currentDeck=p.deck?[...p.deck]:[]; 
+        renderCurrentDeck('pDeckContainer'); 
+    }
+    
+    function savePlayer() { 
+        const id=document.getElementById('pId').value; 
+        const p={
+            id:id?parseInt(id):Date.now(), 
+            name:document.getElementById('pName').value, 
+            img:document.getElementById('pImg').value, 
+            region:document.getElementById('pRegion').value, 
+            inv:document.getElementById('pTextInv').value, 
+            deck:currentDeck, 
+            gold:parseInt(document.getElementById('pGold').value), 
+            elixir:parseInt(document.getElementById('pElixir').value), 
+            dark:parseInt(document.getElementById('pDark').value)
+        }; 
+        const i=gameData.players.findIndex(x=>x.id==p.id); 
+        if(i>=0) gameData.players[i]=p; 
+        else {gameData.players.push(p); ui.addLog("Nouveau Seigneur: "+p.name);} 
+        cloud.push(); 
+        refreshGameData(); 
+    }
+    
+    // --- NPCS ---
+    function renderNPCsList() { 
+        const c=document.getElementById('npcsListContainer'); c.innerHTML=""; 
+        (gameData.npcs||[]).forEach(n=>{ 
+            const d = document.createElement('div'); 
+            d.className='list-card-item npc'; 
+            d.onclick = () => loadNPC(n.id);
+            d.innerHTML=`<div style="display:flex;align-items:center;gap:10px;"><img src="${n.img||'https://via.placeholder.com/50'}" class="avatar-circle" style="border-color:var(--npc-color)"><div><b>${n.name}</b><br><small style="color:#aaa">${n.type}</small></div></div>`; 
+            c.appendChild(d);
+        }); 
+    }
+    
+    function newNPCForm() { 
+        editingType='npc'; 
+        document.getElementById('nId').value=""; 
+        ['nName','nType','nImg','nStory'].forEach(i=>document.getElementById(i).value=""); 
+        currentDeck=[]; 
+        renderCurrentDeck('nDeckContainer'); 
+    }
+    
+    function loadNPC(id) { 
+        editingType='npc'; 
+        const n=gameData.npcs.find(x=>x.id==id); 
+        document.getElementById('nId').value=n.id; 
+        document.getElementById('nName').value=n.name; 
+        document.getElementById('nType').value=n.type; 
+        document.getElementById('nImg').value=n.img; 
+        document.getElementById('nStory').value=n.story; 
+        currentDeck=n.deck?[...n.deck]:[]; 
+        renderCurrentDeck('nDeckContainer'); 
+    }
+    
+    function saveNPC() { 
+        const id=document.getElementById('nId').value; 
+        const n={
+            id:id?parseInt(id):Date.now(), 
+            name:document.getElementById('nName').value, 
+            type:document.getElementById('nType').value, 
+            img:document.getElementById('nImg').value, 
+            story:document.getElementById('nStory').value, 
+            deck:currentDeck
+        }; 
+        const i=gameData.npcs.findIndex(x=>x.id==n.id); 
+        if(i>=0) gameData.npcs[i]=n; 
+        else {gameData.npcs.push(n); ui.addLog("Nouveau PNJ: "+n.name);} 
+        cloud.push(); 
+        refreshGameData(); 
+    }
+    
+    function deleteEntity(type) { 
+        if(confirm('Supprimer ?')) { 
+            const id=document.getElementById(type==='players'?'pId':'nId').value; 
+            gameData[type]=gameData[type].filter(x=>x.id!=id); 
+            cloud.push(); 
+            refreshGameData(); 
+        } 
+    }
+    
+    // --- CARDS ---
+    function renderCurrentDeck(divId) { 
+        const c=document.getElementById(divId); c.innerHTML=""; 
+        currentDeck.forEach((cid, idx)=>{ 
+            const card=gameData.cards.find(x=>x.id===cid)||{img:''}; 
+            c.innerHTML+=`<div class="cr-card-mini"><img src="${card.img}"><div class="remove-card-btn" onclick="removeCard(${idx},'${divId}')">x</div></div>`; 
+        }); 
+    }
+    
+    function removeCard(idx, divId) { 
+        currentDeck.splice(idx,1); 
+        renderCurrentDeck(divId); 
+    }
+    
+    // === CARD EDITING ===
+    function openCardSelectionModal(type) { 
+        editingType=type; 
+        const g=document.getElementById('cardsGrid'); g.innerHTML=""; 
+        gameData.cards.forEach(c=>{ 
+            g.innerHTML+=`
+            <div class="grid-card">
+                <img src="${c.img}" onclick="addCard('${c.id}')">
+                <button class="card-edit-btn" onclick="editCustomCard('${c.id}')">✏️</button>
+                <br><small>${c.name}</small>
+            </div>`; 
+        }); 
+        document.getElementById('cardSelectionModal').style.display='flex'; 
+    }
+    
+    function addCard(id) { 
+        currentDeck.push(id); 
+        renderCurrentDeck(editingType==='player'?'pDeckContainer':'nDeckContainer'); 
+        document.getElementById('cardSelectionModal').style.display='none'; 
+    }
+    
+    function newCustomCard() {
+        document.getElementById('ccId').value = "";
+        document.getElementById('ccName').value = "";
+        document.getElementById('ccImg').value = "";
+        document.getElementById('ccElixir').value = "";
+        document.getElementById('ccDesc').value = "";
+        document.getElementById('btnDeleteCard').style.display = 'none';
+        document.getElementById('createCardModal').style.display = 'flex';
+    }
+
+    function editCustomCard(id) {
+        const c = gameData.cards.find(x => x.id === id);
+        if(!c) return;
+        document.getElementById('ccId').value = c.id;
+        document.getElementById('ccName').value = c.name;
+        document.getElementById('ccImg').value = c.img;
+        document.getElementById('ccElixir').value = c.elixir;
+        document.getElementById('ccType').value = c.type || "Troupe";
+        document.getElementById('ccDesc').value = c.desc || "";
+        document.getElementById('btnDeleteCard').style.display = 'block';
+        document.getElementById('createCardModal').style.display = 'flex';
+    }
+
+    function saveCustomCard() {
+        const id = document.getElementById('ccId').value;
+        const name = document.getElementById('ccName').value;
+        if(!name) return alert("Nom requis");
+
+        const cardData = {
+            id: id || 'cust-'+Date.now(),
+            name: name,
+            img: document.getElementById('ccImg').value || 'https://via.placeholder.com/100',
+            elixir: document.getElementById('ccElixir').value,
+            type: document.getElementById('ccType').value,
+            desc: document.getElementById('ccDesc').value
+        };
+
+        if(id) {
+            const idx = gameData.cards.findIndex(x => x.id === id);
+            if(idx >= 0) gameData.cards[idx] = cardData;
+        } else {
+            gameData.cards.push(cardData);
+        }
+
+        cloud.push();
+        alert("Carte sauvegardée !");
+        document.getElementById('createCardModal').style.display = 'none';
+        openCardSelectionModal(editingType);
+    }
+
+    function deleteCustomCard() {
+        if(!confirm("Supprimer définitivement cette carte ?")) return;
+        const id = document.getElementById('ccId').value;
+        gameData.cards = gameData.cards.filter(x => x.id !== id);
+        cloud.push();
+        document.getElementById('createCardModal').style.display = 'none';
+        openCardSelectionModal(editingType);
+    }
+
+    // --- RELATIONS ---
+    function renderRelationSubjects() { 
+        const c=document.getElementById('relSubjectList'); c.innerHTML=""; selectedRelationSubject=null; 
+        document.getElementById('relTitle').innerText="Sélectionnez..."; 
+        document.getElementById('relContainer').innerHTML=""; 
+        [...gameData.players,...gameData.npcs].forEach(e=>{ 
+            const d = document.createElement('div'); d.className='list-card-item'; d.onclick = () => loadRelationsFor(e.id, e.name);
+            d.innerHTML = `<b>${e.name}</b>`;
+            c.appendChild(d);
+        }); 
+    }
+    
+    function loadRelationsFor(id, name) { 
+        selectedRelationSubject = id;
+        document.getElementById('relTitle').innerText="Relations de "+name; 
+        const c=document.getElementById('relContainer'); c.innerHTML=""; 
+        [...gameData.players,...gameData.npcs].forEach(t=>{ 
+            if(t.id==id)return; 
+            const r=gameData.relations.find(x=>x.from==id&&x.to==t.id)||{status:'Inconnu',note:''}; 
+            c.innerHTML+=`
+            <div class="relation-target">
+                <b>${t.name}</b>
+                <select onchange="updateRel(${id},${t.id},'status',this.value)">
+                    <option value="Inconnu" ${r.status=='Inconnu'?'selected':''}>Inconnu</option>
+                    <option value="Amical" ${r.status=='Amical'?'selected':''}>Amical</option>
+                    <option value="Neutre" ${r.status=='Neutre'?'selected':''}>Neutre</option>
+                    <option value="Hostile" ${r.status=='Hostile'?'selected':''}>Hostile</option>
+                    <option value="Allié" ${r.status=='Allié'?'selected':''}>Allié</option>
+                </select>
+                <input type="text" value="${r.note}" onchange="updateRel(${id},${t.id},'note',this.value)">
+            </div>`; 
+        }); 
+    }
+    
+    function updateRel(from, to, field, val) { 
+        let r=gameData.relations.find(x=>x.from==from&&x.to==to); 
+        if(!r){r={from:from,to:to,status:'Inconnu',note:''};gameData.relations.push(r);} 
+        r[field]=val; cloud.push(); 
+    }
+    
+    // --- LOGS ---
+    function renderLogs() { 
+        const c=document.getElementById('logOutput'); c.innerHTML=""; 
+        (gameData.logs||[]).slice().forEach(l=>{c.innerHTML+=`<div class="log-entry"><span class="log-time">[${l.t}]</span> ${l.m}</div>`;}); 
+    }
+    
+    function addManualLog() { 
+        const i=document.getElementById('customLogInput'); 
+        if(i.value){ui.addLog(i.value); i.value=""; cloud.push(); refreshGameData();} 
+    }
+    
+    function clearLogs() { if(confirm('Vider ?')){gameData.logs=[]; cloud.push(); refreshGameData();} }
+    
+    // --- JOURNAL (FIXED) ---
+    function renderJournalList() { 
+        const c=document.getElementById('journalListContainer'); c.innerHTML=""; 
+        (gameData.journal||[]).sort((a,b)=>b.id-a.id).forEach(j=>{ 
+            const d = document.createElement('div'); d.className='list-card-item'; d.onclick = () => loadJournal(j.id);
+            d.innerHTML=`<div class="journal-date" style="font-size:0.8em;color:#aaa">${j.date}</div><b style="margin-left:5px">${j.title}</b>`;
+            c.appendChild(d);
+        }); 
+    }
+    
+    function loadJournal(id) { 
+        const j=gameData.journal.find(x=>x.id==id); 
+        document.getElementById('jId').value=j.id; 
+        document.getElementById('jTitle').value=j.title; 
+        document.getElementById('jDate').value=j.date; 
+        document.getElementById('jContent').value=j.content; 
+        renderParticipants(j.parts||[]); 
+    }
+    
+    function newJournalForm() { 
+        ['jId','jTitle','jDate','jContent'].forEach(i=>document.getElementById(i).value=""); 
+        // This was missing in your provided code block, re-adding it here
+        renderParticipants([]); 
+    }
+    
+    function renderParticipants(ids) {
+        const c = document.getElementById('jParticipantsContainer'); c.innerHTML = "";
+        const players = gameData.players || [];
+        const npcs = gameData.npcs || [];
+        const allActors = [...players, ...npcs];
+        
+        if (allActors.length === 0) {
+            c.innerHTML = "<span style='color:#777; font-style:italic;'>Aucun personnage créé.</span>";
+            return;
+        }
+
+        allActors.forEach(p => {
+            const isChecked = (ids || []).includes(p.id) ? 'checked' : '';
+            c.innerHTML += `
+                <label style="display:inline-flex; align-items:center; margin-right:10px; margin-bottom:5px; background:#333; padding:5px 10px; border-radius:15px; cursor:pointer; border:1px solid #444;">
+                    <input type="checkbox" value="${p.id}" ${isChecked} style="margin-right:5px;"> 
+                    ${p.name}
+                </label>`;
+        });
+    }
+
+    function saveJournal() { 
+        const id=document.getElementById('jId').value; 
+        const parts = Array.from(document.querySelectorAll('#jParticipantsContainer input:checked')).map(x => parseInt(x.value));
+        const j={
+            id:id?parseInt(id):Date.now(), 
+            title:document.getElementById('jTitle').value, 
+            date:document.getElementById('jDate').value, 
+            content:document.getElementById('jContent').value, 
+            parts:parts
+        }; 
+        const i=gameData.journal.findIndex(x=>x.id==j.id); 
+        if(i>=0) gameData.journal[i]=j; 
+        else gameData.journal.push(j); 
+        cloud.push(); 
+        refreshGameData(); 
+    }
+    
+    function genQR(id) { 
+        const u=localStorage.getItem('sb_url'), k=localStorage.getItem('sb_key'); 
+        if(!u) return alert("Config requise"); 
+        const l=`${window.location.href.split('?')[0]}?mode=client&s=${gameData.sessionId}&id=${id}&u=${encodeURIComponent(btoa(u))}&k=${encodeURIComponent(btoa(k))}`; 
+        document.getElementById('qrcode').innerHTML=""; 
+        new QRCode(document.getElementById("qrcode"),{text:l,width:200,height:200}); 
+        document.getElementById('qrModal').style.display='flex'; 
+    }
+
+    // === MAP MANAGER ===
+    const mapManager = {
+        renderList: () => {
+            const c = document.getElementById('mapListContainer'); if(!c) return; c.innerHTML = "";
+            gameData.maps = gameData.maps || [{ id: 'root', name: 'Monde Principal', img: 'map.png' }];
+            const current = gameData.maps.find(x => x.id === gameData.activeMapId) || gameData.maps[0];
+            
+            gameData.maps.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `map-item ${gameData.activeMapId === m.id ? 'active' : ''}`;
+                div.innerHTML = `🗺️ <b>${m.name}</b>`; 
+                div.onclick = () => mapManager.switchMap(m.id);
+                c.appendChild(div);
+            });
+
+            const imgDesktop = document.getElementById('worldMapImg');
+            const imgMobile = document.querySelector('#mob-map .world-map');
+            const label = document.getElementById('currentMapLabel');
+
+            if(imgDesktop) imgDesktop.src = current.img;
+            if(imgMobile) imgMobile.src = current.img;
+            if(label) label.innerText = current.name;
+            
+            const inputUrl = document.getElementById('editMapUrl');
+            if(inputUrl && document.activeElement !== inputUrl) inputUrl.value = current.img;
+        },
+        switchMap: (id) => { 
+            gameData.activeMapId = id; 
+            cloud.push(); 
+            refreshGameData(); 
+        },
+        addMap: () => {
+            const name = document.getElementById('newMapName').value;
+            if(name) {
+                const id = 'map-' + Date.now();
+                gameData.maps.push({ id: id, name: name, img: 'map.png' });
+                document.getElementById('newMapName').value = "";
+                mapManager.switchMap(id);
+            }
+        },
+        updateUrl: () => {
+            const url = document.getElementById('editMapUrl').value;
+            const current = gameData.maps.find(x => x.id === gameData.activeMapId);
+            if(current && url) { current.img = url; cloud.push(); refreshGameData(); }
+        }
+    };
+
+    // Map Logic
+    let pendingMapClick = {x:0, y:0};
+    function initMapInteraction() { 
+        const m = document.querySelector('#gmMapContainer .world-map'); 
+        if(m) { 
+            m.onclick = (e) => { 
+                const r = m.getBoundingClientRect(); 
+                pendingMapClick = { x: ((e.clientX - r.left)/r.width)*100, y: ((e.clientY - r.top)/r.height)*100 }; 
+                openMapMenu(); 
+            }; 
+        } 
+    }
+    
+    function openMapMenu() { 
+        const c = document.getElementById('mapPlayerButtons'); c.innerHTML = ""; 
+        gameData.players.forEach(p => { 
+            const div = document.createElement('div'); div.className = 'list-card-item';
+            div.onclick = () => teleportPlayer(p.id);
+            div.innerHTML = `<img src="${p.img}" class="avatar-circle"><b>${p.name}</b>`;
+            c.appendChild(div); 
+        }); 
+        document.getElementById('mapMenuModal').style.display = 'flex'; 
+    }
+    
+    function teleportPlayer(id) { 
+        const p = gameData.players.find(x => x.id === id); 
+        if(p) { 
+            p.mapX = pendingMapClick.x; 
+            p.mapY = pendingMapClick.y; 
+            p.mapId = gameData.activeMapId; 
+            cloud.push(); 
+            refreshGameData(); 
+        } 
+        document.getElementById('mapMenuModal').style.display = 'none'; 
+    }
+    
+    function renderMapPins() {
+        document.querySelectorAll('.map-marker').forEach(e=>e.remove());
+        [document.querySelector('#gmMapContainer'), document.querySelector('#mob-map .full-map-container')].forEach(c => {
+            if(c) {
+                gameData.players.forEach(p => {
+                    const pMap = p.mapId || 'root';
+                    if(p.mapX && p.mapY && pMap === gameData.activeMapId) {
+                        const d = document.createElement('div'); d.className = 'map-marker';
+                        d.style.left = p.mapX + '%'; d.style.top = p.mapY + '%';
+                        d.style.backgroundImage = `url('${p.img||"https://via.placeholder.com/50"}')`;
+                        d.innerHTML = `<div class="tooltip">${p.name}</div>`;
+                        if(document.getElementById('gm-view').style.display !== 'none') d.onclick = (e) => { 
+                            e.stopPropagation(); 
+                            switchTab('view-players'); 
+                            loadPlayer(p.id); 
+                        };
+                        c.appendChild(d);
+                    }
+                });
+            }
+        });
+    }
+	// === SURCHARGE : AFFICHAGE DECK AVEC INFOS (HOVER) ===
+    // Cette fonction remplace l'ancienne renderCurrentDeck pour ajouter le menu contextuel
+    function renderCurrentDeck(divId) { 
+        const c = document.getElementById(divId); 
+        c.innerHTML = ""; 
+        
+        currentDeck.forEach((cid, idx) => { 
+            // On cherche les infos complètes de la carte
+            const card = gameData.cards.find(x => x.id === cid) || {
+                name: 'Inconnu', img: '', desc: 'Pas de description', elixir: '?', type: '?'
+            }; 
+
+            // On construit le HTML de la bulle d'info
+            const tooltipHtml = `
+                <div class="card-tooltip">
+                    <div class="tooltip-header">${card.name}</div>
+                    <div class="tooltip-stats">
+                        <span>💧 ${card.elixir}</span>
+                        <span>⚔️ ${card.type || 'Autre'}</span>
+                    </div>
+                    <div class="tooltip-desc">${card.desc || "Aucune description disponible."}</div>
+                </div>
+            `;
+
+            // On ajoute la carte + la bulle
+            c.innerHTML += `
+            <div class="cr-card-mini" style="overflow:visible;">
+                <img src="${card.img}">
+                <div class="remove-card-btn" onclick="removeCard(${idx},'${divId}')">x</div>
+                ${tooltipHtml}
+            </div>`; 
+        }); 
+    }
+	// === SURCHARGE : RELATIONS VISUELLES ===
+    
+    // Nouvelle version de la fonction d'affichage des relations
+    function loadRelationsFor(id, name) { 
+        selectedRelationSubject = id;
+        document.getElementById('relTitle').innerText="Relations de "+name; 
+        const c=document.getElementById('relContainer'); c.innerHTML=""; 
+        
+        [...gameData.players,...gameData.npcs].forEach(t=>{ 
+            if(t.id==id)return; 
+            const r=gameData.relations.find(x=>x.from==id&&x.to==t.id)||{status:'Inconnu',note:''}; 
+            
+            // Nettoyage du statut pour le CSS (enlève les accents : Allié devient Allie)
+            const statusCss = r.status.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            // On ajoute la barre de couleur au début et on utilise la nouvelle fonction d'update sur le select
+            c.innerHTML+=`
+            <div class="relation-target" id="rel-row-${t.id}">
+                <div class="rel-status-bar status-${statusCss}"></div>
+                <b>${t.name}</b>
+                <select onchange="updateRelWithVisual(${id},${t.id},'status',this)">
+                    <option value="Inconnu" ${r.status=='Inconnu'?'selected':''}>Inconnu</option>
+                    <option value="Amical" ${r.status=='Amical'?'selected':''}>Amical</option>
+                    <option value="Neutre" ${r.status=='Neutre'?'selected':''}>Neutre</option>
+                    <option value="Hostile" ${r.status=='Hostile'?'selected':''}>Hostile</option>
+                    <option value="Allié" ${r.status=='Allié'?'selected':''}>Allié</option>
+                </select>
+                <input type="text" value="${r.note}" placeholder="Notes..." onchange="updateRel(${id},${t.id},'note',this.value)">
+            </div>`; 
+        }); 
+    }
+
+    // Nouvelle fonction pour mettre à jour la couleur instantanément
+    function updateRelWithVisual(from, to, field, selectElement) {
+        const val = selectElement.value;
+        // 1. Sauvegarder les données (appelle l'ancienne fonction)
+        updateRel(from, to, field, val);
+
+        // 2. Mettre à jour le visuel immédiatement
+        const row = document.getElementById(`rel-row-${to}`);
+        const bar = row.querySelector('.rel-status-bar');
+        if(bar) {
+            // Nettoyer le nom pour le CSS
+            const statusCss = val.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            // Appliquer la nouvelle classe
+            bar.className = `rel-status-bar status-${statusCss}`;
+        }
+    }
+
+    client.check();
+    setTimeout(() => { initMapInteraction(); }, 1000);
+</script>
+<style>
+    /* --- NOUVELLES VARIABLES THÉMATIQUES --- */
+    :root {
+        --cr-blue-dark: #183052; /* Fond profond */
+        --cr-blue-mid: #325a8e;  /* Panneaux principaux */
+        --cr-blue-light: #4a86c7; /* Bordures claires */
+        --cr-wood-dark: #4a3018; /* Boutons inactifs */
+        --cr-wood-light: #8c5e35; /* Boutons actifs */
+        --cr-gold: #ffd700; /* Accents et texte important */
+        --cr-shadow-inset: inset 0 3px 8px rgba(0,0,0,0.6);
+        --cr-shadow-pop: 0 4px 0 rgba(0,0,0,0.4), 0 5px 10px rgba(0,0,0,0.3); /* Effet 3D */
+        --cr-border-radius: 16px;
+        --cr-text-outline: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    }
+
+    /* --- FONDS GLOBAUX --- */
+    body {
+        /* Dégradé radial bleu style "Arène" */
+        background: radial-gradient(circle at center top, var(--cr-blue-mid) 0%, var(--cr-blue-dark) 100%) !important;
+    }
+    #gm-view, #client-view {
+        background: transparent !important;
+    }
+
+    /* --- PANNEAUX ET CONTENEURS (PC) --- */
+    /* On donne un aspect "bloc de pierre bleue" aux zones principales */
+    .list-panel, .detail-panel, .map-sidebar, .map-controls, .chat-input-area, #gmChatTitle, .log-container {
+        background: var(--cr-blue-dark) !important;
+        border: 3px solid var(--cr-blue-mid) !important;
+        box-shadow: var(--cr-shadow-inset) !important;
+        border-radius: 8px !important;
+    }
+    .detail-panel, .view-section.active .split-layout {
+        padding: 15px !important;
+        gap: 10px;
+    }
+    /* L'entête du MJ ressemble plus à un ponton en bois */
+    header {
+        background: linear-gradient(to bottom, #3a2410, #2b1a0a) !important;
+        border-bottom: 4px solid #1a0f05 !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+        z-index: 20;
+    }
+
+    /* --- BOUTONS DE NAVIGATION (ONGLETS PC) --- */
+    /* Aspect "gros bouton en bois" */
+    .tab-btn {
+        background: linear-gradient(to bottom, var(--cr-wood-light), var(--cr-wood-dark)) !important;
+        border: 2px solid #1a0f05 !important;
+        border-bottom: none !important;
+        border-radius: 10px 10px 0 0 !important;
+        color: #e3d2b4 !important;
+        text-shadow: 1px 1px 2px #000 !important;
+        box-shadow: inset 0 2px 2px rgba(255,255,255,0.2);
+        margin-right: 2px !important;
+    }
+    .tab-btn:hover { background: linear-gradient(to bottom, #9e6b3d, #5c3d21) !important; }
+    /* L'onglet actif ressort et s'allume */
+    .tab-btn.active {
+        background: linear-gradient(to bottom, var(--cr-blue-light), var(--cr-blue-mid)) !important;
+        color: var(--cr-gold) !important;
+        border-color: var(--cr-blue-light) !important;
+        transform: translateY(-4px);
+        height: 54px !important;
+        box-shadow: 0 -2px 10px rgba(74, 134, 199, 0.5) !important;
+        z-index: 25 !important;
+    }
+
+    /* --- BOUTONS D'ACTION (SAUVER, ETC.) --- */
+    /* Effet 3D "cliquable" très marqué */
+    .action-btn {
+        background: linear-gradient(to bottom, #546e7a, #37474f) !important;
+        border: 1px solid #263238 !important;
+        border-radius: 8px !important;
+        box-shadow: var(--cr-shadow-pop) !important;
+        transition: all 0.1s !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .action-btn:active {
+        transform: translateY(4px) !important; /* Le bouton s'enfonce */
+        box-shadow: none !important;
+    }
+    /* Couleurs spécifiques pour Sauver/Reset */
+    .save-btn { background: linear-gradient(to bottom, #2ecc71, #219653) !important; box-shadow: 0 4px 0 #145a32, 0 5px 10px rgba(0,0,0,0.3) !important; }
+    .reset-btn { background: linear-gradient(to bottom, #e74c3c, #c0392b) !important; box-shadow: 0 4px 0 #7b241c, 0 5px 10px rgba(0,0,0,0.3) !important; }
+
+    /* --- FORMULAIRES ET INPUTS --- */
+    /* Aspect "creusé" dans l'interface */
+    input, select, textarea, .visual-inv-box {
+        background: rgba(0,0,0,0.4) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-radius: 10px !important;
+        box-shadow: inset 0 3px 5px rgba(0,0,0,0.5) !important;
+        color: #fff !important;
+    }
+    input:focus, textarea:focus, select:focus {
+        border-color: var(--cr-gold) !important;
+        background: rgba(0,0,0,0.6) !important;
+    }
+    h3 {
+        color: var(--cr-gold) !important;
+        text-shadow: var(--cr-text-outline) !important;
+        border-bottom: 2px solid var(--cr-blue-mid) !important;
+    }
+
+    /* --- LISTES ET CARTES (ITEMS) --- */
+    /* Plaques individuelles avec bords arrondis */
+    .list-card-item {
+        background: linear-gradient(to right, rgba(40, 65, 100, 0.9), rgba(24, 48, 82, 0.9)) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 5px rgba(0,0,0,0.3) !important;
+        margin-bottom: 10px !important;
+        backdrop-filter: blur(4px);
+    }
+    .list-card-item:hover {
+        border-color: var(--cr-blue-light) !important;
+        transform: scale(1.02);
+    }
+    .list-card-item.selected {
+        border-left: none !important; /* On enlève l'ancienne bordure */
+        border: 2px solid var(--cr-gold) !important; /* On remplace par un cadre doré */
+        background: linear-gradient(to right, rgba(100, 80, 20, 0.6), rgba(24, 48, 82, 0.9)) !important;
+    }
+    .avatar-circle {
+        border: 3px solid var(--cr-gold) !important;
+        box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+    }
+
+    /* ================= MOBILE VISUEL ================= */
+    /* En-tête mobile style Clash */
+    .mob-header {
+        background: linear-gradient(to bottom, var(--cr-blue-mid), var(--cr-blue-dark)) !important;
+        border-bottom: 4px solid var(--cr-wood-dark) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+    }
+    /* Onglets mobiles */
+    .mob-tab-btn {
+        background: transparent !important;
+        border-bottom: none !important;
+        font-family: 'Segoe UI Black', Roboto, sans-serif; /* Police plus grasse si dispo */
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #aaa !important;
+        text-shadow: 1px 1px 2px #000;
+    }
+    .mob-tab-btn.active {
+        color: var(--cr-gold) !important;
+        background: rgba(0,0,0,0.2) !important;
+        border-bottom: 4px solid var(--cr-gold) !important;
+    }
+    /* Cartes principales mobile (Stats, etc.) */
+    .mob-card {
+        background: rgba(24, 48, 82, 0.85) !important; /* Bleu semi-transparent */
+        border: 3px solid var(--cr-blue-light) !important;
+        border-radius: var(--cr-border-radius) !important;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.4), inset 0 2px 3px rgba(255,255,255,0.1) !important;
+        backdrop-filter: blur(10px); /* Effet verre dépoli */
+    }
+    /* Gros titres et valeurs sur mobile */
+    #mobName, .mob-val {
+        text-shadow: var(--cr-text-outline) !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px;
+    }
+    #mobImg {
+        border: 5px solid var(--cr-gold) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.6) !important;
+    }
+
+    /* Journal Mobile style "Parchemin magique" */
+    .mob-journal-entry {
+        background: linear-gradient(135deg, #2c3e50, #1a252f) !important;
+        border: 2px solid var(--cr-blue-mid) !important;
+        border-left: 6px solid var(--info) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.3) !important;
+    }
+    .mob-journal-title {
+        color: var(--cr-gold) !important;
+    }
+    
+    /* Modales */
+    .modal-content {
+        background: var(--cr-blue-dark) !important;
+        border: 4px solid var(--cr-blue-light) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8) !important;
+    }
+
+    /* --- CHAT BULLES --- */
+    .msg-bubble {
+        box-shadow: 0 3px 5px rgba(0,0,0,0.3) !important;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .msg-bubble.right { background: linear-gradient(to bottom left, #2980b9, #1c5a85) !important; }
+    .msg-bubble.left { background: linear-gradient(to bottom right, #444, #333) !important; }
+</style>
+</body>
+</html>
+</body>
+</html>
