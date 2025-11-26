@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Manager Royale V19 - Architecture</title>
+    <title>Manager Royale - V19.3 (Multi-Fichiers)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -35,7 +35,7 @@
                     </div>
                     <div class="mob-card">
                         <div class="mob-val" style="color:#e91e63" id="mobElixir">0</div>
-                        <div class="mob-label">Élixir rose</div>
+                        <div class="mob-label">Élixir</div>
                     </div>
                 </div>
 
@@ -149,8 +149,8 @@
                     <input type="text" id="pRegion" placeholder="Région actuelle">
                     <div style="display:flex; gap:10px;">
                         <div style="flex:1"><label>Or</label><input type="number" id="pGold"></div>
-                        <div style="flex:1"><label>Élixir Rose</label><input type="number" id="pElixir"></div>
-                        <div style="flex:1"><label>Élixir Noir</label><input type="number" id="pDark"></div>
+                        <div style="flex:1"><label>Élixir</label><input type="number" id="pElixir"></div>
+                        <div style="flex:1"><label>Noir</label><input type="number" id="pDark"></div>
                     </div>
                     <label>Inventaire</label>
                     <textarea id="pTextInv" placeholder="..." style="height:80px;"></textarea>
@@ -181,7 +181,16 @@
                         <input type="text" id="nType" placeholder="Rôle">
                     </div>
                     <input type="text" id="nImg" placeholder="Avatar URL">
+                    
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1"><label>Or</label><input type="number" id="nGold"></div>
+                        <div style="flex:1"><label>Élixir</label><input type="number" id="nElixir"></div>
+                        <div style="flex:1"><label>Noir</label><input type="number" id="nDark"></div>
+                    </div>
+
+                    <label>Histoire</label>
                     <textarea id="nStory" placeholder="Histoire..." style="height:80px;"></textarea>
+                    
                     <label>Deck / Objets</label>
                     <div id="nDeckContainer" class="visual-inv-box"></div>
                     <button class="action-btn" style="width:100%; margin-top:5px; background:#444;" onclick="openCardSelectionModal('npc')">+ Cartes / Objets</button>
