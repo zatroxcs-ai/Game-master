@@ -27,15 +27,12 @@ let gameData = {
     sessionId: 'sess-1764101013787'
 };
 
-// On force l'écriture de l'ID dans le navigateur pour être sûr
-localStorage.setItem('royale_sess_id', gameData.sessionId);
+if(!localStorage.getItem('royale_sess_id')) localStorage.setItem('royale_sess_id', gameData.sessionId);
 
-// Fonction de debug globale
 function debugMob(msg, color='red') {
     const el = document.getElementById('mobRegion'); 
     const params = new URLSearchParams(window.location.search);
     if(el && params.get('mode') === 'client' && !el.innerHTML.includes(msg)) {
         el.innerHTML += `<br><span style="color:${color}; font-size:0.8em">${msg}</span>`;
     }
-    console.log("DEBUG:", msg);
 }
