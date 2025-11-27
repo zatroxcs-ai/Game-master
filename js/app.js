@@ -794,5 +794,172 @@ function renderMapPins() {
     });
 }
 
+// ============================================================
+// GESTION DES QUÊTES (NOUVEAU)
+// ============================================================
+
+// 1. Afficher la liste à gauche (MJ)
+function renderQuestList() {
+    const c = document.getElementById('questListContainer');
+    if(!c) return;
+    c.innerHTML = "";
+    (gameData.quests || []).forEach(q => {
+        // Couleur selon le statut
+        let color = '#fff';
+        if(q.status === 'Terminée') color = '#2ecc71';
+        if(q.status === 'Échouée') color = '#e74c3c';
+        if(q.status === 'Cachée') color = '#777';
+
+        const div = document.createElement('div');
+        div.className = 'list-card-item';
+        div.onclick = () => loadQuest(q.id);
+        div.innerHTML = `
+            <div style="width:100%">
+                <div style="display:flex; justify-content:space-between;">
+                    <b>${q.title}</b>
+                    <span style="font-size:0.8em; color:${color}">${q.status}</span>
+                </div>
+                <div style="font-size:0.8em; color:#aaa;">Donneur: ${getGiverName(q.giver)}</div>
+            </div>`;
+        c.appendChild(div);
+    });
+}
+
+// Helper pour trouver le nom du PNJ
+function getGiverName(id) {
+    const npc = (gameData.npcs || []).find(n => n.id == id);
+    return npc ? npc.name : "Inconnu/Autre";
+}
+
+// 2. Préparer le formulaire (Nouveau)
+function newQuestForm() {
+    document.getElementById('qId').value = "";
+    document.getElementById('qTitle').value = "";
+    document.getElementById('qDesc').value = "";
+    document.getElementById('qRewards').value = "";
+    document.getElementById('qStatus').value = "En cours";
+    
+    updateGiverSelect(); // Remplir la liste des PNJ
+    renderQuestParticipants([]); // Cases à cocher vides
+}
+
+// 3. Charger une quête (Clic)
+function loadQuest(id) {
+    const q = gameData.quests.find(x => x.id == id);
+    if(!q) return;
+
+    document.getElementById('qId').value = q.id;
+    document.getElementById('qTitle').value = q.title;
+    document.getElementById('qDesc').value = q.desc;
+    document.getElementById('qRewards').value = q.rewards;
+    document.getElementById('qStatus').value = q.status;
+    
+    updateGiverSelect(q.giver);
+    renderQuestParticipants(q.assignedTo || []);
+}
+
+// 4. Remplir le menu déroulant des PNJ (Donneurs de quête)
+function updateGiverSelect(selectedId = "") {
+    const sel = document.getElementById('qGiver');
+    sel.innerHTML = '<option value="">-- Inconnu / Panneau --</option>';
+    (gameData.npcs || []).forEach(n => {
+        const selected = n.id == selectedId ? 'selected' : '';
+        sel.innerHTML += `<option value="${n.id}" ${selected}>${n.name} (${n.type})</option>`;
+    });
+}
+
+// 5. Gérer les cases à cocher des joueurs assignés
+function renderQuestParticipants(ids) {
+    const c = document.getElementById('qParticipantsContainer');
+    c.innerHTML = "";
+    (gameData.players || []).forEach(p => {
+        const isChecked = ids.includes(p.id) ? 'checked' : '';
+        c.innerHTML += `
+            <label style="display:inline-flex; align-items:center; margin-right:10px; margin-bottom:5px; background:#333; padding:5px 10px; border-radius:15px; cursor:pointer; border:1px solid #444;">
+                <input type="checkbox" value="${p.id}" ${isChecked} style="margin-right:5px;"> 
+                ${p.name}
+            </label>`;
+    });
+}
+
+// 6. Sauvegarder
+function saveQuest() {
+    const id = document.getElementById('qId').value;
+    const assigned = Array.from(document.querySelectorAll('#qParticipantsContainer input:checked')).map(x => parseInt(x.value));
+    
+    const q = {
+        id: id ? parseInt(id) : Date.now(),
+        title: document.getElementById('qTitle').value || "Nouvelle Quête",
+        giver: document.getElementById('qGiver').value,
+        status: document.getElementById('qStatus').value,
+        desc: document.getElementById('qDesc').value,
+        rewards: document.getElementById('qRewards').value,
+        assignedTo: assigned
+    };
+
+    gameData.quests = gameData.quests || [];
+    const idx = gameData.quests.findIndex(x => x.id == q.id);
+    
+    if(idx >= 0) gameData.quests[idx] = q;
+    else {
+        gameData.quests.push(q);
+        // Si assignée à tout le monde, on log
+        if(assigned.length > 0) ui.addLog("Nouvelle quête : " + q.title);
+    }
+    
+    cloud.push();
+    renderQuestList();
+}
+
+// 7. Supprimer
+function deleteQuest() {
+    const id = document.getElementById('qId').value;
+    if(id && confirm("Supprimer cette quête ?")) {
+        gameData.quests = gameData.quests.filter(x => x.id != id);
+        cloud.push();
+        renderQuestList();
+        newQuestForm();
+    }
+}
+
+// --- AFFICHAGE MOBILE (JOUEUR) ---
+function renderMobileQuests(playerId) {
+    const c = document.getElementById('mobQuestList');
+    if(!c) return;
+    c.innerHTML = "";
+
+    // On filtre : Quêtes assignées au joueur ET qui ne sont pas "Cachées"
+    const myQuests = (gameData.quests || []).filter(q => 
+        (q.assignedTo || []).includes(playerId) && q.status !== 'Cachée'
+    );
+
+    if(myQuests.length === 0) {
+        c.innerHTML = "<div style='text-align:center; color:#888; margin-top:20px;'>Aucune quête active.</div>";
+        return;
+    }
+
+    myQuests.forEach(q => {
+        // Style selon statut
+        let icon = "⚔️";
+        let styleClass = "";
+        if(q.status === 'Terminée') { icon = "✅"; styleClass="opacity:0.7;"; }
+        if(q.status === 'Échouée') { icon = "❌"; styleClass="opacity:0.7;"; }
+
+        c.innerHTML += `
+        <div class="mob-card" style="text-align:left; ${styleClass}">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px solid #ccc; padding-bottom:5px;">
+                <b style="color:var(--accent); font-size:1.1em;">${icon} ${q.title}</b>
+                <span style="font-size:0.8em; background:#333; color:white; padding:2px 6px; border-radius:4px;">${q.status}</span>
+            </div>
+            <div style="font-size:0.9em; color:#333; font-style:italic; margin-bottom:10px;">${q.desc}</div>
+            
+            <div style="font-size:0.8em; display:flex; justify-content:space-between;">
+                <span>👤 ${getGiverName(q.giver)}</span>
+                <span style="color:#e67e22; font-weight:bold;">🎁 ${q.rewards || "???"}</span>
+            </div>
+        </div>`;
+    });
+}
+
 client.check();
 setTimeout(() => { initMapInteraction(); }, 1000);
