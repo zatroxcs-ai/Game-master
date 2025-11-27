@@ -6,6 +6,7 @@ let gameData = {
     logs: [],
     relations: [],
     chat: [],
+    quests: [],
     maps: [
         { id: 'root', name: 'Monde Principal', img: 'map.png' },
         { id: 'enfers', name: 'Royaume des Enfers', img: 'enfers.png' } 
