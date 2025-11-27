@@ -159,30 +159,89 @@ header {
     border: 1px solid #000;
 }
 
-/* --- CARTE DU MONDE --- */
-.full-map-container {
-    width: 100%; height: 100%;
-    display: flex; justify-content: center; align-items: center;
-    background: #111; /* Gris très foncé derrière la carte */
-    overflow: hidden; /* Empêche de dépasser */
+/* --- MAP & ATLAS (CORRECTIF PIONS) --- */
+.map-sidebar { 
+    width: 220px; 
+    display: flex; flex-direction: column; margin-right: 10px; 
+    background: var(--cr-panel-wood);
+    border: 3px solid var(--cr-border-wood);
+    border-radius: 12px;
+    padding: 10px;
 }
-        .full-map-container { 
-            width: 100%; height: 100%; 
-            display: flex; justify-content: center; align-items: center; 
-            background: #111; overflow: hidden; 
-            position: relative; /* Important pour les pions */
-        }
-        
-        .world-map { 
-            width: 100%; height: 100%; /* Force l'image à remplir le cadre */
-            object-fit: contain; /* 'contain' affiche tout, 'cover' zoom pour remplir sans bordures noires */
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
-        }
-#currentMapLabel {
-    font-size: 1.2em; font-weight: 900;
-    text-transform: uppercase;
-    text-shadow: var(--text-stroke);
-    letter-spacing: 1px;
+
+.map-view-area { 
+    flex: 1; 
+    position: relative; /* INDISPENSABLE */
+    background: #000; 
+    display: flex; justify-content: center; align-items: center; 
+    overflow: hidden; /* Empêche les pions de sortir du cadre */
+    border: 3px solid var(--cr-border-wood); 
+    border-radius: 12px; 
+    padding: 0;
+}
+
+.full-map-container { 
+    width: 100%; 
+    height: 100%; 
+    position: relative; /* INDISPENSABLE pour le repère X/Y */
+    display: flex; justify-content: center; align-items: center;
+}
+
+.world-map { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain; 
+    display: block;
+}
+
+/* LE PION (TOKEN) */
+.map-marker {
+    position: absolute; /* C'est ça qui le fait flotter ! */
+    width: 50px; 
+    height: 50px; 
+    border-radius: 50%;
+    border: 3px solid #fff; 
+    box-shadow: 0 0 0 2px #000, 0 5px 15px rgba(0,0,0,0.8);
+    transform: translate(-50%, -50%); /* Centre le pion pile sur le clic */
+    cursor: pointer; 
+    z-index: 100;
+    background-size: cover; 
+    background-position: center; 
+    background-color: #222;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.map-marker:hover { 
+    transform: translate(-50%, -50%) scale(1.5); 
+    z-index: 200; 
+    border-color: var(--cr-gold); 
+}
+
+/* L'INFOBULLE (NOM CACHÉ) */
+.map-marker .tooltip {
+    visibility: hidden; /* Caché par défaut */
+    opacity: 0;
+    background: rgba(0,0,0,0.9); 
+    color: #fff;
+    text-align: center; 
+    border-radius: 6px; 
+    padding: 4px 8px;
+    position: absolute; 
+    bottom: 120%; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    white-space: nowrap; 
+    font-size: 0.85em; 
+    font-weight: bold;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    border: 1px solid var(--cr-gold);
+}
+
+/* On affiche le nom SEULEMENT au survol */
+.map-marker:hover .tooltip { 
+    visibility: visible; 
+    opacity: 1; 
 }
 
 /* --- BOUTONS --- */
