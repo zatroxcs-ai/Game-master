@@ -208,7 +208,12 @@
                 <div class="list-panel"><button class="action-btn save-btn" onclick="newJournalForm()">+ Nouvelle Entrée</button><div id="journalListContainer"></div></div>
                 <div class="detail-panel">
                     <input type="hidden" id="jId"><input type="text" id="jTitle" placeholder="Titre"><input type="text" id="jDate" placeholder="Date">
-                    <label>Participants</label><div id="jParticipantsContainer" class="visual-inv-box" style="border:none; display:flex; flex-wrap:wrap;"></div>
+                    <div style="display:flex; align-items:center; margin-top:10px;">
+                        <label style="margin:0;">Assignée aux Joueurs :</label>
+                        <button class="btn-mini-add" onclick="openParticipantModal('quest')">+</button>
+                    </div>
+                    <div id="qParticipantsPreview" class="participants-preview"></div>
+                    <input type="hidden" id="qParticipantsData">
                     <textarea id="jContent" placeholder="Récit..." style="height:250px; margin-top:10px;"></textarea><button class="action-btn save-btn" onclick="saveJournal()">Sauvegarder</button>
                 </div>
             </div>
@@ -236,6 +241,18 @@
     </div>
     <div id="mapMenuModal" class="modal-overlay">
         <div class="modal-content"><span class="close-modal" onclick="document.getElementById('mapMenuModal').style.display='none'">&times;</span><h3>Déplacer qui ici ?</h3><div id="mapPlayerButtons" style="display:flex; flex-direction:column; gap:5px; max-height:300px; overflow-y:auto;"></div><button class="action-btn reset-btn" style="margin-top:10px; width:100%" onclick="document.getElementById('mapMenuModal').style.display='none'">Annuler</button></div>
+    </div>
+
+	<div id="participantModal" class="modal-overlay" style="z-index:300">
+        <div class="modal-content">
+            <h3>Choisir les Participants</h3>
+            <div id="participantListCheckboxes" style="text-align:left; max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:5px;">
+                </div>
+            <div style="margin-top:15px; display:flex; gap:10px;">
+                <button class="action-btn" onclick="document.getElementById('participantModal').style.display='none'">Annuler</button>
+                <button class="action-btn save-btn" onclick="confirmParticipants()">Valider</button>
+            </div>
+        </div>
     </div>
 
     <script src="js/data.js" defer></script>
