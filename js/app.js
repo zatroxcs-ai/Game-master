@@ -5,16 +5,18 @@ function refreshGameData() {
     gameData.relations = gameData.relations || [];
     gameData.chat = gameData.chat || [];
     gameData.maps = gameData.maps || [{ id: 'root', name: 'Monde Principal', img: 'map.png' }];
+	gameData.quests = gameData.quests || [];
 
     mapManager.renderList();
     renderMapPins();
+	renderQuestList();
 
     const params = new URLSearchParams(window.location.search);
     if(params.get('mode') === 'client') {
         client.render(gameData);
         const r = document.getElementById('mobRegion'); 
         const p = gameData.players.find(x => x.id === parseInt(params.get('id')));
-        if(p && r.innerHTML.includes("reçues")) r.innerHTML = p.region || "-";
+        if(p && r.innerHTML.includes("reçues")) r.innerHTML = p.region || "-" renderMobileQuests(p.id);
     } else {
         ui.refreshAll();
     }
@@ -211,7 +213,7 @@ function switchTab(t){
     document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
     document.getElementById(t).classList.add('active');
-    const map = {'view-map':0, 'view-chat':1, 'view-players':2, 'view-npcs':3, 'view-relations':4, 'view-journal':5, 'view-logs':6};
+    const map = {'view-map':0, 'view-chat':1, 'view-players':2, 'view-npcs':3, 'view-relations':4, 'view-journal':5, 'view-logs':6, 'view-quests':7};
     const btn = document.querySelectorAll('#gm-view .nav-tabs .tab-btn')[map[t]]; 
     if(btn) btn.classList.add('active');
     if(t === 'view-relations') renderRelationSubjects();
