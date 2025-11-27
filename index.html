@@ -138,10 +138,14 @@
                     
                     <label>Récompenses promises</label>
                     <input type="text" id="qRewards" placeholder="Ex: 500 Or, Épée magique...">
-
-                    <label>Assignée aux Joueurs :</label>
-                    <div id="qParticipantsContainer" class="visual-inv-box" style="border:none; display:flex; flex-wrap:wrap;"></div>
-
+					<label>Assignée aux Joueurs :</label>
+					<div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;">
+						<button class="action-btn" style="width:30px; height:30px; padding:0; border-radius:50%; background:#2ecc71; display:flex; justify-content:center; align-items:center;" onclick="openParticipantModal('quest')">+</button>
+						<span style="font-size:0.8em; color:#aaa;">Ajouter des joueurs</span>
+					</div>
+					<div id="qParticipantsPreview" class="participants-preview" style="display:flex; flex-wrap:wrap; gap:5px; min-height:30px;"></div>
+					<input type="hidden" id="qParticipantsData" value="[]">
+					
                     <div style="margin-top:20px; text-align:right;">
                         <button class="action-btn reset-btn" onclick="deleteQuest()">Supprimer</button>
                         <button class="action-btn save-btn" onclick="saveQuest()">Enregistrer</button>
@@ -209,8 +213,13 @@
                 <div class="detail-panel">
                     <input type="hidden" id="jId"><input type="text" id="jTitle" placeholder="Titre"><input type="text" id="jDate" placeholder="Date">
                     <div style="display:flex; align-items:center; margin-top:10px;">
-                        <label style="margin:0;">Assignée aux Joueurs :</label>
-                        <button class="btn-mini-add" onclick="openParticipantModal('quest')">+</button>
+                        <label>Participants</label>
+							<div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;">
+   							<button class="action-btn" style="width:30px; height:30px; padding:0; border-radius:50%; background:#2ecc71; display:flex; justify-content:center; align-items:center;" onclick="openParticipantModal('journal')">+</button>
+    						<span style="font-size:0.8em; color:#aaa;">Ajouter des participants</span>
+							</div>
+							<div id="jParticipantsPreview" class="participants-preview" style="display:flex; flex-wrap:wrap; gap:5px; min-height:30px;"></div>
+							<input type="hidden" id="jParticipantsData" value="[]">
                     </div>
                     <div id="qParticipantsPreview" class="participants-preview"></div>
                     <input type="hidden" id="qParticipantsData">
@@ -244,16 +253,15 @@
     </div>
 
 	<div id="participantModal" class="modal-overlay" style="z-index:300">
-        <div class="modal-content">
-            <h3>Choisir les Participants</h3>
-            <div id="participantListCheckboxes" style="text-align:left; max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:5px;">
-                </div>
-            <div style="margin-top:15px; display:flex; gap:10px;">
-                <button class="action-btn" onclick="document.getElementById('participantModal').style.display='none'">Annuler</button>
-                <button class="action-btn save-btn" onclick="confirmParticipants()">Valider</button>
-            </div>
-        </div>
-    </div>
+    <div class="modal-content">
+        <h3>Choisir les Participants</h3>
+        <div id="participantListCheckboxes" style="text-align:left; max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:5px;"></div>
+        <div style="margin-top:15px; display:flex; gap:10px;">
+            <button class="action-btn reset-btn" onclick="document.getElementById('participantModal').style.display='none'">Annuler</button>
+            <button class="action-btn save-btn" onclick="confirmParticipants()">Valider</button>
+		</div>
+	</div>
+	</div>
 
     <script src="js/data.js" defer></script>
     <script src="js/cloud.js" defer></script>
