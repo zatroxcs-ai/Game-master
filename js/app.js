@@ -742,38 +742,57 @@ function playClashCardEffect(cardId) {
         // On relance l'affichage
         renderMapPins();
     }
+	
+// === FONCTION D'AFFICHAGE DES PIONS (CORRIGÉE) ===
+function renderMapPins() {
+    // 1. Nettoyage : on retire les anciens pions
+    document.querySelectorAll('.map-marker').forEach(e => e.remove());
 
-    // MODIFIER LÉGÈREMENT LA FONCTION renderMapPins EXISTANTE :
-    // Remplace ta fonction renderMapPins actuelle par celle-ci :
-    function renderMapPins() {
-        // 1. On nettoie tout
-        document.querySelectorAll('.map-marker').forEach(e => e.remove());
+    // 2. Sélection des zones de carte (PC et Mobile)
+    const containers = [
+        document.querySelector('#gmMapContainer'), 
+        document.querySelector('#mob-map .full-map-container')
+    ];
 
-        // 2. SI on a décidé de cacher les joueurs, on s'arrête là !
-        if (!showMarkers) return; 
-
-        // 3. Sinon, on affiche comme d'habitude
-        [document.querySelector('#gmMapContainer'), document.querySelector('#mob-map .full-map-container')].forEach(c => {
-            if (c) {
-                gameData.players.forEach(p => {
-                    const pMap = p.mapId || 'root';
-                    if (p.mapX && p.mapY && pMap === gameData.activeMapId) {
-                        const d = document.createElement('div'); d.className = 'map-marker';
-                        d.style.left = p.mapX + '%'; d.style.top = p.mapY + '%';
-                        d.style.backgroundImage = `url('${p.img||"https://via.placeholder.com/50"}')`;
-                        
-                        // C'est ce bout de code qui affichait le nom à droite ou au survol
-                        d.innerHTML = `<div class="tooltip">${p.name}</div>`;
-                        
-                        if (document.getElementById('gm-view').style.display !== 'none') {
-                            d.onclick = (e) => { e.stopPropagation(); switchTab('view-players'); loadPlayer(p.id); };
-                        }
-                        c.appendChild(d);
+    containers.forEach(c => {
+        if (c) {
+            // 3. On parcourt chaque joueur
+            gameData.players.forEach(p => {
+                // Vérifie si le joueur est sur la carte active
+                const pMap = p.mapId || 'root';
+                
+                if (p.mapX && p.mapY && pMap === gameData.activeMapId) {
+                    
+                    // Création du pion
+                    const d = document.createElement('div'); 
+                    d.className = 'map-marker';
+                    
+                    // Positionnement précis en %
+                    d.style.left = p.mapX + '%'; 
+                    d.style.top = p.mapY + '%';
+                    
+                    // Image de l'avatar
+                    d.style.backgroundImage = `url('${p.img || "https://via.placeholder.com/50"}')`;
+                    
+                    // Ajout du nom dans l'infobulle (cachée par le CSS)
+                    d.innerHTML = `<div class="tooltip">${p.name}</div>`;
+                    
+                    // Interaction au clic (Uniquement pour le MJ)
+                    if (document.getElementById('gm-view').style.display !== 'none') {
+                        d.onclick = (e) => { 
+                            e.stopPropagation(); // Empêche de cliquer sur la carte en dessous
+                            switchTab('view-players'); // Ouvre l'onglet joueur
+                            loadPlayer(p.id); // Charge la fiche
+                        };
                     }
-                });
-            }
-        });
-    }
+                    
+                    // Ajout final sur la carte
+                    c.appendChild(d);
+                }
+            });
+        }
+    });
+}
 
 client.check();
 setTimeout(() => { initMapInteraction(); }, 1000);
