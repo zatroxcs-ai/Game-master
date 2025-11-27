@@ -2,8 +2,8 @@
 
 // 1. ENTRE TES INFOS SUPABASE ICI (Entre les guillemets)
 const SUPABASE_CONFIG = {
-    url: "https://xxxxxxxxxxxx.supabase.co",  // Remplace par ton URL (celle de la barre d'adresse)
-    key: "eyJh......"                         // Remplace par ta clé ANON (la longue suite de caractères)
+    url: "https://vrhkqkujylzvjdzjpraa.supabase.co",  // Remplace par ton URL (celle de la barre d'adresse)
+    key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaGtxa3VqeWx6dmpkempwcmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNzQ1MjMsImV4cCI6MjA3OTY1MDUyM30.YB5xJdezJkcWaRx1DFSnKa8ePfbvqDbnGffF7dix-14"                         // Remplace par ta clé ANON (la longue suite de caractères)
 };
 
 const cloud = {
