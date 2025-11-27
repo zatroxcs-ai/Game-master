@@ -729,6 +729,51 @@ function playClashCardEffect(cardId) {
         }
     }, 4000);
 }
+    
+    let showMarkers = true; // Par défaut on voit les joueurs
+
+    function toggleMapMarkers() {
+        showMarkers = !showMarkers; // On inverse (Vrai <-> Faux)
+        const btn = document.querySelector("button[onclick='toggleMapMarkers()']");
+        
+        // On met à jour le texte du bouton
+        if(btn) btn.innerHTML = showMarkers ? "👁️ Cacher Joueurs" : "🙈 Afficher Joueurs";
+        
+        // On relance l'affichage
+        renderMapPins();
+    }
+
+    // MODIFIER LÉGÈREMENT LA FONCTION renderMapPins EXISTANTE :
+    // Remplace ta fonction renderMapPins actuelle par celle-ci :
+    function renderMapPins() {
+        // 1. On nettoie tout
+        document.querySelectorAll('.map-marker').forEach(e => e.remove());
+
+        // 2. SI on a décidé de cacher les joueurs, on s'arrête là !
+        if (!showMarkers) return; 
+
+        // 3. Sinon, on affiche comme d'habitude
+        [document.querySelector('#gmMapContainer'), document.querySelector('#mob-map .full-map-container')].forEach(c => {
+            if (c) {
+                gameData.players.forEach(p => {
+                    const pMap = p.mapId || 'root';
+                    if (p.mapX && p.mapY && pMap === gameData.activeMapId) {
+                        const d = document.createElement('div'); d.className = 'map-marker';
+                        d.style.left = p.mapX + '%'; d.style.top = p.mapY + '%';
+                        d.style.backgroundImage = `url('${p.img||"https://via.placeholder.com/50"}')`;
+                        
+                        // C'est ce bout de code qui affichait le nom à droite ou au survol
+                        d.innerHTML = `<div class="tooltip">${p.name}</div>`;
+                        
+                        if (document.getElementById('gm-view').style.display !== 'none') {
+                            d.onclick = (e) => { e.stopPropagation(); switchTab('view-players'); loadPlayer(p.id); };
+                        }
+                        c.appendChild(d);
+                    }
+                });
+            }
+        });
+    }
 
 client.check();
 setTimeout(() => { initMapInteraction(); }, 1000);
