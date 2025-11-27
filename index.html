@@ -20,6 +20,7 @@
             <button id="tab-map" class="tab-btn mob-tab-btn" onclick="client.switchTab('map')">🌍 CARTE</button>
             <button id="tab-journal" class="tab-btn mob-tab-btn" onclick="client.switchTab('journal')">📖 JRNL</button>
             <button id="tab-chat" class="tab-btn mob-tab-btn" onclick="client.switchTab('chat')">💬 CHAT</button>
+			<button id="tab-quests" class="tab-btn mob-tab-btn" onclick="client.switchTab('quests')">⚔️</button>
         </div>
 
         <div id="mob-stats" class="mob-container active">
@@ -56,6 +57,10 @@
                 <button class="action-btn" onclick="sendChatMessage('mobile')">Envoyer</button>
             </div>
         </div>
+
+		<div id="mob-quests" class="mob-container">
+            <div id="mobQuestList" class="mob-scroll-content"></div>
+        </div>
     </div>
 
     <div id="gm-view" style="display:flex; flex-direction:column; height:100%;">
@@ -67,7 +72,8 @@
                 <button class="tab-btn" onclick="switchTab('view-npcs')">🎭 PNJ</button>
                 <button class="tab-btn" onclick="switchTab('view-relations')">🤝 Relations</button>
                 <button class="tab-btn" onclick="switchTab('view-journal')">📖 Journal</button>
-                <button class="tab-btn" onclick="switchTab('view-logs')">📜 Logs</button>
+				<button class="tab-btn" onclick="switchTab('view-quests')">⚔️ Quêtes</button>
+				<button class="tab-btn" onclick="switchTab('view-logs')">📜 Logs</button>
             </div>
             <div class="controls-area">
                 <span id="statusDot" style="color:red; font-size: 0.8em;">● Offline</span>
@@ -93,6 +99,53 @@
                 <div class="map-view-area detail-panel" style="padding:0; background:#000;">
                     <div id="gmMapContainer" class="full-map-container"><img id="worldMapImg" src="" class="world-map" alt="Carte"></div>
                     <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); padding:5px 10px; border-radius:4px; pointer-events:none;"><span id="currentMapLabel" style="color:white; font-weight:bold;">Chargement...</span></div>
+                </div>
+            </div>
+        </div>
+
+		<div id="view-quests" class="view-section">
+            <div class="split-layout">
+                <div class="list-panel">
+                    <button class="action-btn save-btn" onclick="newQuestForm()">+ Nouvelle Quête</button>
+                    <div id="questListContainer"></div>
+                </div>
+                <div class="detail-panel">
+                    <h3>📜 Édition Quête</h3>
+                    <input type="hidden" id="qId">
+                    
+                    <input type="text" id="qTitle" placeholder="Titre de la quête (ex: Chasse au Gobelin)">
+                    
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1">
+                            <label>Commanditaire (Qui donne ?)</label>
+                            <select id="qGiver">
+                                <option value="">-- Inconnu / Panneau --</option>
+                                </select>
+                        </div>
+                        <div style="flex:1">
+                            <label>Statut</label>
+                            <select id="qStatus" style="background:#222; color:white;">
+                                <option value="En cours" style="color:gold">En cours</option>
+                                <option value="Terminée" style="color:lightgreen">Terminée</option>
+                                <option value="Échouée" style="color:red">Échouée</option>
+                                <option value="Cachée" style="color:gray">Cachée (Futur)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label>Description / Objectifs</label>
+                    <textarea id="qDesc" placeholder="Détails de la mission..." style="height:100px;"></textarea>
+                    
+                    <label>Récompenses promises</label>
+                    <input type="text" id="qRewards" placeholder="Ex: 500 Or, Épée magique...">
+
+                    <label>Assignée aux Joueurs :</label>
+                    <div id="qParticipantsContainer" class="visual-inv-box" style="border:none; display:flex; flex-wrap:wrap;"></div>
+
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="action-btn reset-btn" onclick="deleteQuest()">Supprimer</button>
+                        <button class="action-btn save-btn" onclick="saveQuest()">Enregistrer</button>
+                    </div>
                 </div>
             </div>
         </div>
