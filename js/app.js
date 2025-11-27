@@ -517,67 +517,52 @@ function addManualLog() {
 
 function clearLogs() { if(confirm('Vider ?')){gameData.logs=[]; cloud.push(); refreshGameData();} }
 
-// --- JOURNAL (FIXED) ---
-function renderJournalList() { 
-    const c=document.getElementById('journalListContainer'); c.innerHTML=""; 
-    (gameData.journal||[]).sort((a,b)=>b.id-a.id).forEach(j=>{ 
-        const d = document.createElement('div'); d.className='list-card-item'; d.onclick = () => loadJournal(j.id);
-        d.innerHTML=`<div class="journal-date" style="font-size:0.8em;color:#aaa">${j.date}</div><b style="margin-left:5px">${j.title}</b>`;
-        c.appendChild(d);
-    }); 
+// --- REMPLACEMENTS POUR LE JOURNAL ---
+
+function newJournalForm() {
+    ['jId','jTitle','jDate','jContent'].forEach(i => document.getElementById(i).value = "");
+    document.getElementById('jParticipantsData').value = "[]"; // Reset data
+    renderPreview('jParticipantsPreview', []); // Reset visuel
 }
 
-function loadJournal(id) { 
-    const j=gameData.journal.find(x=>x.id==id); 
-    document.getElementById('jId').value=j.id; 
-    document.getElementById('jTitle').value=j.title; 
-    document.getElementById('jDate').value=j.date; 
-    document.getElementById('jContent').value=j.content; 
-    renderParticipants(j.parts||[]); 
-}
-
-function newJournalForm() { 
-    ['jId','jTitle','jDate','jContent'].forEach(i=>document.getElementById(i).value=""); 
-    renderParticipants([]); // Ensure list is refreshed
-}
-
-function renderParticipants(ids) {
-    const c = document.getElementById('jParticipantsContainer'); c.innerHTML = "";
-    const players = gameData.players || [];
-    const npcs = gameData.npcs || [];
-    const allActors = [...players, ...npcs];
+function loadJournal(id) {
+    const j = gameData.journal.find(x => x.id == id);
+    if(!j) return;
+    document.getElementById('jId').value = j.id;
+    document.getElementById('jTitle').value = j.title;
+    document.getElementById('jDate').value = j.date;
+    document.getElementById('jContent').value = j.content;
     
-    if (allActors.length === 0) {
-        c.innerHTML = "<span style='color:#777; font-style:italic;'>Aucun personnage créé.</span>";
-        return;
-    }
-
-    allActors.forEach(p => {
-        const isChecked = (ids || []).includes(p.id) ? 'checked' : '';
-        c.innerHTML += `
-            <label style="display:inline-flex; align-items:center; margin-right:10px; margin-bottom:5px; background:#333; padding:5px 10px; border-radius:15px; cursor:pointer; border:1px solid #444;">
-                <input type="checkbox" value="${p.id}" ${isChecked} style="margin-right:5px;"> 
-                ${p.name}
-            </label>`;
-    });
+    // Chargement des participants via le nouveau système
+    const parts = j.parts || [];
+    document.getElementById('jParticipantsData').value = JSON.stringify(parts);
+    renderPreview('jParticipantsPreview', parts);
 }
 
-function saveJournal() { 
-    const id=document.getElementById('jId').value; 
-    const parts = Array.from(document.querySelectorAll('#jParticipantsContainer input:checked')).map(x => parseInt(x.value));
-    const j={
-        id:id?parseInt(id):Date.now(), 
-        title:document.getElementById('jTitle').value, 
-        date:document.getElementById('jDate').value, 
-        content:document.getElementById('jContent').value, 
-        parts:parts
-    }; 
-    const i=gameData.journal.findIndex(x=>x.id==j.id); 
-    if(i>=0) gameData.journal[i]=j; 
-    else gameData.journal.push(j); 
-    cloud.push(); 
-    refreshGameData(); 
+function saveJournal() {
+    const id = document.getElementById('jId').value;
+    // Lecture du champ caché
+    const rawParts = document.getElementById('jParticipantsData').value;
+    const parts = rawParts ? JSON.parse(rawParts) : [];
+
+    const j = {
+        id: id ? parseInt(id) : Date.now(),
+        title: document.getElementById('jTitle').value,
+        date: document.getElementById('jDate').value,
+        content: document.getElementById('jContent').value,
+        parts: parts
+    };
+    
+    const i = gameData.journal.findIndex(x => x.id == j.id);
+    if (i >= 0) gameData.journal[i] = j;
+    else gameData.journal.push(j);
+    
+    cloud.push();
+    renderJournalList();
 }
+
+// --- REMPLACEMENTS POUR LES QUÊTES (Faire pareil pour loadQuest/newQuestForm/saveQuest) ---
+// (Je te laisse adapter la logique : c'est exactement la même, utilise 'qParticipantsData' et 'qParticipantsPreview')
 
 function genQR(id) { 
     const u=localStorage.getItem('sb_url'), k=localStorage.getItem('sb_key'); 
@@ -835,14 +820,18 @@ function getGiverName(id) {
 
 // 2. Préparer le formulaire (Nouveau)
 function newQuestForm() {
+    // 1. Vider les champs textes classiques
     document.getElementById('qId').value = "";
     document.getElementById('qTitle').value = "";
     document.getElementById('qDesc').value = "";
     document.getElementById('qRewards').value = "";
     document.getElementById('qStatus').value = "En cours";
     
-    updateGiverSelect(); // Remplir la liste des PNJ
-    renderQuestParticipants([]); // Cases à cocher vides
+    updateGiverSelect(); // Remettre la liste des PNJ à zéro
+
+    // 2. Vider le nouveau système de participants
+    document.getElementById('qParticipantsData').value = "[]"; // On vide les données cachées
+    renderPreview('qParticipantsPreview', []); // On vide l'affichage visuel (badges)
 }
 
 // 3. Charger une quête (Clic)
@@ -850,6 +839,7 @@ function loadQuest(id) {
     const q = gameData.quests.find(x => x.id == id);
     if(!q) return;
 
+    // 1. Remplir les champs classiques
     document.getElementById('qId').value = q.id;
     document.getElementById('qTitle').value = q.title;
     document.getElementById('qDesc').value = q.desc;
@@ -857,7 +847,11 @@ function loadQuest(id) {
     document.getElementById('qStatus').value = q.status;
     
     updateGiverSelect(q.giver);
-    renderQuestParticipants(q.assignedTo || []);
+
+    // 2. Charger les participants avec le nouveau système
+    const assigned = q.assignedTo || [];
+    document.getElementById('qParticipantsData').value = JSON.stringify(assigned); // On stocke les IDs
+    renderPreview('qParticipantsPreview', assigned); // On affiche les badges
 }
 
 // 4. Remplir le menu déroulant des PNJ (Donneurs de quête)
@@ -887,7 +881,10 @@ function renderQuestParticipants(ids) {
 // 6. Sauvegarder
 function saveQuest() {
     const id = document.getElementById('qId').value;
-    const assigned = Array.from(document.querySelectorAll('#qParticipantsContainer input:checked')).map(x => parseInt(x.value));
+    
+    // 1. Lire les participants depuis le champ caché (JSON) au lieu des checkboxes
+    const rawAssigned = document.getElementById('qParticipantsData').value;
+    const assigned = rawAssigned ? JSON.parse(rawAssigned) : [];
     
     const q = {
         id: id ? parseInt(id) : Date.now(),
@@ -896,7 +893,7 @@ function saveQuest() {
         status: document.getElementById('qStatus').value,
         desc: document.getElementById('qDesc').value,
         rewards: document.getElementById('qRewards').value,
-        assignedTo: assigned
+        assignedTo: assigned // On sauvegarde le tableau d'IDs
     };
 
     gameData.quests = gameData.quests || [];
@@ -905,12 +902,14 @@ function saveQuest() {
     if(idx >= 0) gameData.quests[idx] = q;
     else {
         gameData.quests.push(q);
-        // Si assignée à tout le monde, on log
         if(assigned.length > 0) ui.addLog("Nouvelle quête : " + q.title);
     }
     
     cloud.push();
     renderQuestList();
+    
+    // Optionnel : On vide le formulaire après sauvegarde pour éviter les confusions
+    // newQuestForm(); 
 }
 
 // 7. Supprimer
@@ -960,6 +959,79 @@ function renderMobileQuests(playerId) {
                 <span style="color:#e67e22; font-weight:bold;">🎁 ${q.rewards || "???"}</span>
             </div>
         </div>`;
+    });
+}
+
+// ============================================================
+// GESTION DES PARTICIPANTS (MODALE UNIFIÉE)
+// ============================================================
+
+let currentParticipantContext = ''; // 'journal' ou 'quest'
+
+function openParticipantModal(context) {
+    currentParticipantContext = context;
+    const list = document.getElementById('participantListCheckboxes');
+    list.innerHTML = "";
+
+    // Récupérer les IDs déjà sélectionnés (depuis le champ caché)
+    const inputId = context === 'journal' ? 'jParticipantsData' : 'qParticipantsData';
+    const rawData = document.getElementById(inputId).value;
+    const selectedIds = rawData ? JSON.parse(rawData) : [];
+
+    // Combiner Joueurs et PNJ
+    const allActors = [...(gameData.players || []), ...(gameData.npcs || [])];
+
+    allActors.forEach(p => {
+        const isChecked = selectedIds.includes(p.id) ? 'checked' : '';
+        // Style "Ligne cliquable"
+        list.innerHTML += `
+            <label style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; display:flex; align-items:center; cursor:pointer; border:1px solid #555;">
+                <input type="checkbox" value="${p.id}" ${isChecked} style="width:auto; margin:0 10px 0 0;">
+                <img src="${p.img || 'https://via.placeholder.com/30'}" style="width:30px; height:30px; border-radius:50%; margin-right:10px; object-fit:cover;">
+                <span style="font-weight:bold; color:white;">${p.name}</span>
+                <small style="margin-left:auto; color:#aaa;">${p.type || 'Joueur'}</small>
+            </label>`;
+    });
+
+    document.getElementById('participantModal').style.display = 'flex';
+}
+
+function confirmParticipants() {
+    // 1. Récupérer les cochés
+    const checkboxes = document.querySelectorAll('#participantListCheckboxes input:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+    // 2. Mettre à jour le champ caché et l'affichage visuel
+    if (currentParticipantContext === 'journal') {
+        document.getElementById('jParticipantsData').value = JSON.stringify(selectedIds);
+        renderPreview('jParticipantsPreview', selectedIds);
+    } else {
+        document.getElementById('qParticipantsData').value = JSON.stringify(selectedIds);
+        renderPreview('qParticipantsPreview', selectedIds);
+    }
+
+    document.getElementById('participantModal').style.display = 'none';
+}
+
+function renderPreview(containerId, ids) {
+    const c = document.getElementById(containerId);
+    c.innerHTML = "";
+    
+    if (ids.length === 0) {
+        c.innerHTML = "<small style='color:#888'>Personne sélectionné</small>";
+        return;
+    }
+
+    const allActors = [...(gameData.players || []), ...(gameData.npcs || [])];
+    
+    ids.forEach(id => {
+        const actor = allActors.find(a => a.id === id);
+        if (actor) {
+            c.innerHTML += `
+                <div class="participant-badge">
+                    <img src="${actor.img || ''}"> ${actor.name}
+                </div>`;
+        }
     });
 }
 
