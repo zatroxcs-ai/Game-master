@@ -208,16 +208,41 @@ const ui = {
         if(gameData.logs.length > 50) gameData.logs.shift(); 
     }
 };
-
 function switchTab(t){
-    document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
-    document.getElementById(t).classList.add('active');
-    const map = {'view-map':0, 'view-chat':1, 'view-players':2, 'view-npcs':3, 'view-relations':4, 'view-journal':5, 'view-logs':6, 'view-quests':7};
-    const btn = document.querySelectorAll('#gm-view .nav-tabs .tab-btn')[map[t]]; 
-    if(btn) btn.classList.add('active');
+    // 1. On cache toutes les vues et on éteint tous les boutons
+    document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
+
+    // 2. On affiche la vue demandée
+    const view = document.getElementById(t);
+    if(view) view.classList.add('active');
+
+    // 3. On allume le bon bouton (C'est ici qu'on corrige l'ordre)
+    // L'ordre ici doit être EXACTEMENT le même que tes boutons dans le HTML (de gauche à droite)
+    const map = {
+        'view-map': 0,       // 1er bouton
+        'view-chat': 1,      // 2ème bouton
+        'view-players': 2,   // 3ème bouton
+        'view-npcs': 3,      // 4ème bouton
+        'view-relations': 4, // 5ème bouton
+        'view-quests': 5,    // 6ème bouton (NOUVEAU)
+        'view-journal': 6,   // 7ème bouton
+        'view-logs': 7       // 8ème bouton
+    };
+
+    const btnIndex = map[t];
+    const btns = document.querySelectorAll('#gm-view .nav-tabs .tab-btn');
+    
+    // Sécurité : on vérifie que le bouton existe bien avant d'essayer de l'allumer
+    if(btns[btnIndex]) {
+        btns[btnIndex].classList.add('active');
+    }
+
+    // 4. Chargements spécifiques selon l'onglet
     if(t === 'view-relations') renderRelationSubjects();
+    if(t === 'view-quests') renderQuestList(); // Important : on rafraîchit la liste des quêtes
 }
+
 function saveData(notify=false) { if(notify) ui.addLog("Sauvegarde manuelle."); cloud.push(); }
 function loadGmChat(id, name) { currentGmChannel = id; document.getElementById('gmChatTitle').innerText = name || "Global (Public)"; refreshGameData(); }
 
