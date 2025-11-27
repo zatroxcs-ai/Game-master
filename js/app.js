@@ -16,7 +16,7 @@ function refreshGameData() {
         client.render(gameData);
         const r = document.getElementById('mobRegion'); 
         const p = gameData.players.find(x => x.id === parseInt(params.get('id')));
-        if(p && r.innerHTML.includes("reçues")) r.innerHTML = p.region || "-" renderMobileQuests(p.id);
+        if(p && r.innerHTML.includes("reçues")) r.innerHTML = p.region || "-"; renderMobileQuests(p.id);
     } else {
         ui.refreshAll();
     }
