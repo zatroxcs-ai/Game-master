@@ -1,5 +1,5 @@
 // ============================================================
-// FICHIER : js/app.js (VERSION RÉPARÉE - V20)
+// FICHIER : js/app.js (VERSION V21 - DEBUGGED)
 // ============================================================
 
 // --- VARIABLES GLOBALES ---
@@ -9,33 +9,34 @@ let selectedRelationSubject = null;
 let currentGmChannel = 'global';
 let pendingMapClick = {x:0, y:0};
 let showMarkers = true;
-let currentParticipantContext = ''; // Pour la modale participants
+let currentParticipantContext = '';
 
 // --- FONCTION PRINCIPALE DE RAFRAICHISSEMENT ---
 function refreshGameData() {
-    // Sécurisation des données
     gameData.players = gameData.players || [];
     gameData.npcs = gameData.npcs || [];
     gameData.logs = gameData.logs || [];
     gameData.relations = gameData.relations || [];
     gameData.chat = gameData.chat || [];
     gameData.journal = gameData.journal || [];
-    gameData.quests = gameData.quests || []; // Ajout sécurité Quêtes
+    gameData.quests = gameData.quests || [];
     gameData.maps = gameData.maps || [{ id: 'root', name: 'Monde Principal', img: 'map.png' }];
 
-    // Mise à jour Carte
     if(typeof mapManager !== 'undefined') mapManager.renderList();
     renderMapPins();
 
     const params = new URLSearchParams(window.location.search);
     if(params.get('mode') === 'client') {
-        client.render(gameData);
+        if(typeof client !== 'undefined') client.render(gameData);
+        const r = document.getElementById('mobRegion'); 
+        const p = gameData.players.find(x => x.id === parseInt(params.get('id')));
+        if(p && r && r.innerHTML.includes("reçues")) r.innerHTML = p.region || "-";
     } else {
         ui.refreshAll();
     }
 }
 
-// === INTERFACE MJ (UI) ===
+// === UI (MJ) ===
 const ui = {
     refreshAll: () => {
         if(!document.getElementById('gm-view')) return;
@@ -43,14 +44,13 @@ const ui = {
 
         renderPlayersList();
         renderNPCsList();
-        renderJournalList(); // C'est cette fonction qui manquait !
-        renderQuestList();   // Celle-ci aussi !
+        renderJournalList();
+        renderQuestList();
         renderLogs();
         
         if (selectedRelationSubject) loadRelationsFor(selectedRelationSubject);
         else renderRelationSubjects();
         
-        // Chat
         const cc = document.getElementById('gmChatChannels');
         if(cc) {
             cc.innerHTML = "";
@@ -76,7 +76,109 @@ const ui = {
     }
 };
 
-// --- NAVIGATION ONGLETS ---
+// === CLIENT MOBILE ===
+const client = {
+    lastDeckState: null,
+
+    check: () => {
+        const params = new URLSearchParams(window.location.search);
+        if(params.get('mode') === 'client') {
+            const gmView = document.getElementById('gm-view');
+            const clientView = document.getElementById('client-view');
+            if(gmView) gmView.style.display = 'none';
+            if(clientView) clientView.style.display = 'flex';
+            document.title = "Jeu en cours";
+            try {
+                let u = atob(params.get('u')), k = atob(params.get('k'));
+                localStorage.setItem('sb_url', u); 
+                localStorage.setItem('sb_key', k); 
+                gameData.sessionId = params.get('s'); 
+                if(typeof cloud !== 'undefined') cloud.init();
+            } catch(e) { 
+                const mobName = document.getElementById('mobName');
+                if(mobName) mobName.innerText = "ERREUR LIEN"; 
+            }
+        } else {
+            if(typeof cloud !== 'undefined') cloud.init();
+        }
+    },
+
+    render: (d) => {
+        const id = parseInt(new URLSearchParams(window.location.search).get('id'));
+        const p = d.players.find(x => x.id === id);
+        
+        if(p) {
+            document.getElementById('mobName').innerText = p.name;
+            document.getElementById('mobImg').src = p.img || "https://via.placeholder.com/150";
+            
+            const regionEl = document.getElementById('mobRegion');
+            if(regionEl && !regionEl.innerHTML.includes("Erreur")) regionEl.innerText = p.region || "Inconnu";
+            
+            document.getElementById('mobGold').innerText = p.gold; 
+            document.getElementById('mobElixir').innerText = p.elixir;
+            document.getElementById('mobInv').innerText = p.inv || "";
+
+            // Auto-détection Carte
+            const currentDeck = p.deck || [];
+            if (client.lastDeckState !== null) {
+                const newCards = currentDeck.filter(cid => !client.lastDeckState.includes(cid));
+                if (newCards.length > 0) playClashCardEffect(newCards[0]);
+            }
+            client.lastDeckState = [...currentDeck];
+
+            // Deck Display
+            const md = document.getElementById('mobDeckDisplay');
+            if(md) {
+                md.innerHTML = "";
+                if(currentDeck.length > 0) {
+                    currentDeck.forEach(cid => { 
+                        const c = gameData.cards.find(x => x.id == cid); 
+                        if(c) md.innerHTML += `<img src="${c.img}" style="width:40px; height:50px; object-fit:contain;">`; 
+                    });
+                } else md.innerHTML = "<small style='color:#555'>Aucune carte</small>";
+            }
+            
+            // Chat
+            const sel = document.getElementById('mobChatTarget');
+            if(sel) {
+                const curr = sel.value;
+                sel.innerHTML = `<option value="global">Global</option><option value="gm">Au MJ</option>`;
+                d.players.forEach(o => { if(o.id !== id) sel.innerHTML += `<option value="${o.id}">à ${o.name}</option>`; });
+                sel.value = curr;
+            }
+            renderChat('mobChatFeed', id);
+
+            // Journal
+            const jCont = document.getElementById('mobJournalList');
+            if(jCont) {
+                jCont.innerHTML = "";
+                (d.journal || []).sort((a,b)=>b.id-a.id).forEach(j => {
+                    jCont.innerHTML += `
+                        <div class="mob-journal-entry">
+                            <div class="mob-journal-date">${j.date}</div>
+                            <div class="mob-journal-title">${j.title}</div>
+                            <div class="mob-journal-content">${j.content}</div>
+                        </div>`;
+                });
+            }
+
+            // Quêtes Mobile (Fonction restaurée)
+            if(typeof renderMobileQuests === 'function') renderMobileQuests(id);
+        }
+    },
+
+    switchTab: (t) => {
+        document.querySelectorAll('.mob-container').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.mob-tab-btn').forEach(e => e.classList.remove('active'));
+        
+        const target = document.getElementById('mob-'+t);
+        const btn = document.getElementById('tab-'+t);
+        if(target) target.classList.add('active');
+        if(btn) btn.classList.add('active');
+    }
+};
+
+// --- NAVIGATION ---
 function switchTab(t){
     document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
@@ -84,28 +186,24 @@ function switchTab(t){
     const view = document.getElementById(t);
     if(view) view.classList.add('active');
 
-    // Mapping des boutons (Ordre dans le HTML: Carte=0, Chat=1, Joueurs=2, PNJ=3, Relations=4, Journal=5, Logs=6)
-    // ATTENTION: Vérifie l'ordre dans ton index.html !
     const map = {
         'view-map': 0, 'view-chat': 1, 'view-players': 2, 'view-npcs': 3, 
-        'view-relations': 4, 'view-journal': 5, 'view-logs': 6
+        'view-relations': 4, 'view-quests': 5, 'view-journal': 6, 'view-logs': 7
     };
-
     const btnIndex = map[t];
     const btns = document.querySelectorAll('#gm-view .nav-tabs .tab-btn');
     if (btns[btnIndex]) btns[btnIndex].classList.add('active');
 
     if (t === 'view-relations') renderRelationSubjects();
+    if (t === 'view-quests') renderQuestList();
 }
 
 function saveData(notify = false) {
     if (notify && ui.addLog) ui.addLog("Sauvegarde manuelle.");
-    cloud.push();
+    if(typeof cloud !== 'undefined') cloud.push();
 }
 
-// ============================================================
-// GESTION DES JOUEURS
-// ============================================================
+// --- PLAYERS ---
 function renderPlayersList() {
     const c = document.getElementById('playersListContainer');
     if(!c) return;
@@ -179,9 +277,7 @@ function deleteEntity(type) {
     }
 }
 
-// ============================================================
-// GESTION DES PNJ
-// ============================================================
+// --- NPCS ---
 function renderNPCsList() {
     const c = document.getElementById('npcsListContainer');
     if(!c) return;
@@ -203,6 +299,9 @@ function newNPCForm() {
     editingType = 'npc';
     document.getElementById('nId').value = "";
     ['nName', 'nType', 'nImg', 'nStory'].forEach(i => document.getElementById(i).value = "");
+    if(document.getElementById('nGold')) document.getElementById('nGold').value=0;
+    if(document.getElementById('nElixir')) document.getElementById('nElixir').value=0;
+    if(document.getElementById('nDark')) document.getElementById('nDark').value=0;
     currentDeck = [];
     renderCurrentDeck('nDeckContainer');
 }
@@ -216,12 +315,9 @@ function loadNPC(id) {
     document.getElementById('nType').value = n.type;
     document.getElementById('nImg').value = n.img;
     document.getElementById('nStory').value = n.story;
-    
-    // Gestion des ressources PNJ (si les champs existent dans ton HTML)
     if(document.getElementById('nGold')) document.getElementById('nGold').value = n.gold || 0;
     if(document.getElementById('nElixir')) document.getElementById('nElixir').value = n.elixir || 0;
     if(document.getElementById('nDark')) document.getElementById('nDark').value = n.dark || 0;
-
     currentDeck = n.deck ? [...n.deck] : [];
     renderCurrentDeck('nDeckContainer');
 }
@@ -234,7 +330,6 @@ function saveNPC() {
         type: document.getElementById('nType').value,
         img: document.getElementById('nImg').value,
         story: document.getElementById('nStory').value,
-        // Sauvegarde des ressources
         gold: parseInt(document.getElementById('nGold')?.value) || 0,
         elixir: parseInt(document.getElementById('nElixir')?.value) || 0,
         dark: parseInt(document.getElementById('nDark')?.value) || 0,
@@ -247,76 +342,182 @@ function saveNPC() {
     refreshGameData();
 }
 
-// ============================================================
-// GESTION CARTE (AVEC BOUTON CACHER)
-// ============================================================
-function toggleMapMarkers() {
-    showMarkers = !showMarkers;
-    const btn = document.querySelector("button[onclick='toggleMapMarkers()']");
-    if(btn) btn.innerHTML = showMarkers ? "👁️ Cacher Joueurs" : "🙈 Afficher Joueurs";
-    renderMapPins();
-}
-
-function renderMapPins() {
-    document.querySelectorAll('.map-marker').forEach(e => e.remove());
-    if(!showMarkers) return;
-
-    const containers = [
-        document.querySelector('#gmMapContainer'), 
-        document.querySelector('#mob-map .full-map-container')
-    ];
-
-    containers.forEach(c => {
-        if (c) {
-            gameData.players.forEach(p => {
-                const pMap = p.mapId || 'root';
-                if (p.mapX && p.mapY && pMap === gameData.activeMapId) {
-                    const d = document.createElement('div'); 
-                    d.className = 'map-marker';
-                    d.style.left = p.mapX + '%'; 
-                    d.style.top = p.mapY + '%';
-                    d.style.backgroundImage = `url('${p.img || "https://via.placeholder.com/50"}')`;
-                    d.innerHTML = `<div class="tooltip">${p.name}</div>`;
-                    
-                    if (document.getElementById('gm-view').style.display !== 'none') {
-                        d.onclick = (e) => { 
-                            e.stopPropagation(); 
-                            switchTab('view-players'); 
-                            loadPlayer(p.id); 
-                        };
-                    }
-                    c.appendChild(d);
-                }
-            });
-        }
+// --- CARDS ---
+function renderCurrentDeck(divId) {
+    const c = document.getElementById(divId); 
+    if(!c) return;
+    c.innerHTML = "";
+    currentDeck.forEach((cid, idx) => {
+        const card = gameData.cards.find(x => x.id === cid) || { name: '?', img: '' };
+        const tooltip = `<div class="card-tooltip"><div class="tooltip-header">${card.name}</div><div class="tooltip-stats"><span>💧 ${card.elixir}</span></div><div class="tooltip-desc">${card.desc || ""}</div></div>`;
+        c.innerHTML += `<div class="cr-card-mini" style="overflow:visible;"><img src="${card.img}"><div class="remove-card-btn" onclick="removeCard(${idx},'${divId}')">x</div>${tooltip}</div>`;
     });
 }
 
-// ============================================================
-// GESTION DU JOURNAL (CORRECTION MANQUANTE)
-// ============================================================
-function renderJournalList() { 
-    const c = document.getElementById('journalListContainer'); 
-    if(!c) return;
-    c.innerHTML = ""; 
-    (gameData.journal||[]).sort((a,b)=>b.id-a.id).forEach(j => { 
-        const d = document.createElement('div'); 
-        d.className='list-card-item'; 
-        d.onclick = () => loadJournal(j.id);
-        d.innerHTML=`<div class="journal-date" style="font-size:0.8em;color:#aaa">${j.date}</div><b style="margin-left:5px">${j.title}</b>`;
-        c.appendChild(d);
-    }); 
+function removeCard(idx, divId) {
+    currentDeck.splice(idx, 1);
+    renderCurrentDeck(divId);
 }
 
-function loadJournal(id) { 
-    const j = gameData.journal.find(x => x.id == id); 
-    if(!j) return;
-    document.getElementById('jId').value = j.id; 
-    document.getElementById('jTitle').value = j.title; 
-    document.getElementById('jDate').value = j.date; 
-    document.getElementById('jContent').value = j.content; 
+function openCardSelectionModal(type) {
+    editingType = type;
+    const g = document.getElementById('cardsGrid');
+    if(!g) return;
+    g.innerHTML = "";
+    gameData.cards.forEach(c => {
+        g.innerHTML += `<div class="grid-card"><img src="${c.img}" onclick="addCard('${c.id}')"><button class="card-edit-btn" onclick="editCustomCard('${c.id}')">✏️</button><br><small>${c.name}</small></div>`;
+    });
+    document.getElementById('cardSelectionModal').style.display = 'flex';
+}
+
+function addCard(id) {
+    currentDeck.push(id);
+    renderCurrentDeck(editingType === 'player' ? 'pDeckContainer' : 'nDeckContainer');
+    document.getElementById('cardSelectionModal').style.display = 'none';
+}
+
+function newCustomCard() {
+    document.getElementById('ccId').value = "";
+    ['ccName','ccImg','ccElixir','ccDesc'].forEach(i => document.getElementById(i).value = "");
+    document.getElementById('btnDeleteCard').style.display = 'none';
+    document.getElementById('createCardModal').style.display = 'flex';
+}
+
+function editCustomCard(id) {
+    const c = gameData.cards.find(x => x.id === id);
+    if(!c) return;
+    document.getElementById('ccId').value = c.id;
+    document.getElementById('ccName').value = c.name;
+    document.getElementById('ccImg').value = c.img;
+    document.getElementById('ccElixir').value = c.elixir;
+    document.getElementById('ccType').value = c.type || "Troupe";
+    document.getElementById('ccDesc').value = c.desc || "";
+    document.getElementById('btnDeleteCard').style.display = 'block';
+    document.getElementById('createCardModal').style.display = 'flex';
+}
+
+function saveCustomCard() {
+    const id = document.getElementById('ccId').value;
+    const name = document.getElementById('ccName').value;
+    if(!name) return alert("Nom requis");
     
-    // Utilisation du nouveau système de badges
+    const card = {
+        id: id || 'cust-'+Date.now(),
+        name: name,
+        img: document.getElementById('ccImg').value || 'https://via.placeholder.com/100',
+        elixir: document.getElementById('ccElixir').value,
+        desc: document.getElementById('ccDesc').value,
+        type: document.getElementById('ccType').value
+    };
+    
+    if(id) {
+        const i = gameData.cards.findIndex(x => x.id === id);
+        if(i>=0) gameData.cards[i] = card;
+    } else {
+        gameData.cards.push(card);
+    }
+    cloud.push();
+    document.getElementById('createCardModal').style.display = 'none';
+    openCardSelectionModal(editingType);
+}
+
+function deleteCustomCard() {
+    if(!confirm("Supprimer ?")) return;
+    const id = document.getElementById('ccId').value;
+    gameData.cards = gameData.cards.filter(x => x.id !== id);
+    cloud.push();
+    document.getElementById('createCardModal').style.display = 'none';
+    openCardSelectionModal(editingType);
+}
+
+// --- RELATIONS ---
+function renderRelationSubjects() {
+    const c = document.getElementById('relSubjectList');
+    if(!c) return;
+    c.innerHTML = "";
+    selectedRelationSubject = null;
+    document.getElementById('relTitle').innerText = "Sélectionnez...";
+    document.getElementById('relContainer').innerHTML = "";
+    
+    [...gameData.players, ...gameData.npcs].forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'list-card-item';
+        div.onclick = () => loadRelationsFor(e.id, e.name);
+        div.innerHTML = `<b>${e.name}</b>`;
+        c.appendChild(div);
+    });
+}
+
+function loadRelationsFor(id, name) {
+    selectedRelationSubject = id;
+    document.getElementById('relTitle').innerText = "Relations de " + name;
+    const c = document.getElementById('relContainer');
+    c.innerHTML = "";
+    
+    [...gameData.players, ...gameData.npcs].forEach(t => {
+        if (t.id == id) return;
+        const r = gameData.relations.find(x => x.from == id && x.to == t.id) || { status: 'Inconnu', note: '' };
+        const statusCss = r.status.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        c.innerHTML += `
+            <div class="relation-target" id="rel-row-${t.id}">
+                <div class="rel-status-bar status-${statusCss}"></div>
+                <b>${t.name}</b>
+                <select onchange="updateRelWithVisual(${id},${t.id},'status',this)">
+                    <option value="Inconnu" ${r.status=='Inconnu'?'selected':''}>Inconnu</option>
+                    <option value="Amical" ${r.status=='Amical'?'selected':''}>Amical</option>
+                    <option value="Neutre" ${r.status=='Neutre'?'selected':''}>Neutre</option>
+                    <option value="Hostile" ${r.status=='Hostile'?'selected':''}>Hostile</option>
+                    <option value="Allié" ${r.status=='Allié'?'selected':''}>Allié</option>
+                </select>
+                <input type="text" value="${r.note}" placeholder="Notes..." onchange="updateRel(${id},${t.id},'note',this.value)">
+            </div>`;
+    });
+}
+
+function updateRelWithVisual(from, to, field, selectElement) {
+    const val = selectElement.value;
+    updateRel(from, to, field, val);
+    const row = document.getElementById(`rel-row-${to}`);
+    const bar = row.querySelector('.rel-status-bar');
+    if(bar) {
+        const statusCss = val.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        bar.className = `rel-status-bar status-${statusCss}`;
+    }
+}
+
+function updateRel(from, to, field, val) {
+    let r = gameData.relations.find(x => x.from == from && x.to == to);
+    if (!r) {
+        r = { from: from, to: to, status: 'Inconnu', note: '' };
+        gameData.relations.push(r);
+    }
+    r[field] = val;
+    cloud.push();
+}
+
+// --- JOURNAL ---
+function renderJournalList() {
+    const c = document.getElementById('journalListContainer');
+    if(!c) return;
+    c.innerHTML = "";
+    (gameData.journal || []).sort((a, b) => b.id - a.id).forEach(j => {
+        const div = document.createElement('div');
+        div.className = 'list-card-item';
+        div.onclick = () => loadJournal(j.id);
+        div.innerHTML = `<div class="journal-date" style="font-size:0.8em;color:#aaa">${j.date}</div><b style="margin-left:5px">${j.title}</b>`;
+        c.appendChild(div);
+    });
+}
+
+function loadJournal(id) {
+    const j = gameData.journal.find(x => x.id == id);
+    if(!j) return;
+    document.getElementById('jId').value = j.id;
+    document.getElementById('jTitle').value = j.title;
+    document.getElementById('jDate').value = j.date;
+    document.getElementById('jContent').value = j.content;
+    
     const parts = j.parts || [];
     if(document.getElementById('jParticipantsData')) {
         document.getElementById('jParticipantsData').value = JSON.stringify(parts);
@@ -324,153 +525,36 @@ function loadJournal(id) {
     }
 }
 
-function newJournalForm() { 
-    ['jId','jTitle','jDate','jContent'].forEach(i => document.getElementById(i).value = ""); 
+function newJournalForm() {
+    ['jId', 'jTitle', 'jDate', 'jContent'].forEach(i => document.getElementById(i).value = "");
     if(document.getElementById('jParticipantsData')) {
         document.getElementById('jParticipantsData').value = "[]";
         renderPreview('jParticipantsPreview', []);
     }
 }
 
-function saveJournal() { 
-    const id = document.getElementById('jId').value; 
-    // Lecture du champ caché (badges)
+function saveJournal() {
+    const id = document.getElementById('jId').value;
     const rawParts = document.getElementById('jParticipantsData').value;
     const parts = rawParts ? JSON.parse(rawParts) : [];
-
+    
     const j = {
-        id: id ? parseInt(id) : Date.now(), 
-        title: document.getElementById('jTitle').value || "Sans Titre", 
-        date: document.getElementById('jDate').value, 
-        content: document.getElementById('jContent').value, 
-        parts: parts
-    }; 
-    
-    const i = gameData.journal.findIndex(x => x.id == j.id); 
-    if (i >= 0) gameData.journal[i] = j; 
-    else gameData.journal.push(j); 
-    
-    cloud.push(); 
-    renderJournalList(); 
-}
-
-// ============================================================
-// GESTION DES QUÊTES (CORRECTION FONCTIONS MANQUANTES)
-// ============================================================
-
-function renderQuestList() {
-    const c = document.getElementById('questListContainer');
-    if(!c) return; // Sécurité
-    c.innerHTML = "";
-    (gameData.quests || []).forEach(q => {
-        let color = '#fff';
-        if(q.status === 'Terminée') color = '#2ecc71';
-        else if(q.status === 'Échouée') color = '#e74c3c';
-
-        const div = document.createElement('div');
-        div.className = 'list-card-item';
-        div.onclick = () => loadQuest(q.id);
-        div.innerHTML = `
-            <div style="width:100%">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>${q.title}</b>
-                    <span style="font-size:0.8em; color:${color}">${q.status}</span>
-                </div>
-                <div style="font-size:0.8em; color:#aaa;">Donneur: ${getGiverName(q.giver)}</div>
-            </div>`;
-        c.appendChild(div);
-    });
-}
-
-function getGiverName(id) {
-    const npc = (gameData.npcs || []).find(n => n.id == id);
-    return npc ? npc.name : "Inconnu/Autre";
-}
-
-// Cette fonction permet de remplir le selecteur avec les PNJ
-function updateGiverSelect(selectedId = "") {
-    const sel = document.getElementById('qGiver');
-    if(!sel) return;
-    sel.innerHTML = '<option value="">-- Inconnu / Panneau --</option>';
-    (gameData.npcs || []).forEach(n => {
-        const selected = n.id == selectedId ? 'selected' : '';
-        sel.innerHTML += `<option value="${n.id}" ${selected}>${n.name} (${n.type})</option>`;
-    });
-}
-
-function newQuestForm() {
-    // Vide les champs si les IDs existent (sécurité)
-    if(document.getElementById('qId')) document.getElementById('qId').value = "";
-    if(document.getElementById('qTitle')) document.getElementById('qTitle').value = "";
-    if(document.getElementById('qDesc')) document.getElementById('qDesc').value = "";
-    if(document.getElementById('qRewards')) document.getElementById('qRewards').value = "";
-    if(document.getElementById('qStatus')) document.getElementById('qStatus').value = "En cours";
-    
-    updateGiverSelect();
-    
-    if(document.getElementById('qParticipantsData')) {
-        document.getElementById('qParticipantsData').value = "[]";
-        renderPreview('qParticipantsPreview', []);
-    }
-}
-
-function loadQuest(id) {
-    const q = gameData.quests.find(x => x.id == id);
-    if(!q) return;
-
-    document.getElementById('qId').value = q.id;
-    document.getElementById('qTitle').value = q.title;
-    document.getElementById('qDesc').value = q.desc;
-    document.getElementById('qRewards').value = q.rewards;
-    document.getElementById('qStatus').value = q.status;
-    
-    updateGiverSelect(q.giver);
-    
-    const assigned = q.assignedTo || [];
-    document.getElementById('qParticipantsData').value = JSON.stringify(assigned);
-    renderPreview('qParticipantsPreview', assigned);
-}
-
-function saveQuest() {
-    const id = document.getElementById('qId').value;
-    const rawAssigned = document.getElementById('qParticipantsData').value;
-    const assigned = rawAssigned ? JSON.parse(rawAssigned) : [];
-    
-    const q = {
         id: id ? parseInt(id) : Date.now(),
-        title: document.getElementById('qTitle').value || "Nouvelle Quête",
-        giver: document.getElementById('qGiver').value,
-        status: document.getElementById('qStatus').value,
-        desc: document.getElementById('qDesc').value,
-        rewards: document.getElementById('qRewards').value,
-        assignedTo: assigned
+        title: document.getElementById('jTitle').value,
+        date: document.getElementById('jDate').value,
+        content: document.getElementById('jContent').value,
+        parts: parts
     };
-
-    gameData.quests = gameData.quests || [];
-    const idx = gameData.quests.findIndex(x => x.id == q.id);
-    if(idx >= 0) gameData.quests[idx] = q;
-    else {
-        gameData.quests.push(q);
-        ui.addLog("Nouvelle quête : " + q.title);
-    }
+    
+    const i = gameData.journal.findIndex(x => x.id == j.id);
+    if (i >= 0) gameData.journal[i] = j;
+    else gameData.journal.push(j);
     
     cloud.push();
-    renderQuestList();
+    renderJournalList();
 }
 
-function deleteQuest() {
-    const id = document.getElementById('qId').value;
-    if(id && confirm("Supprimer cette quête ?")) {
-        gameData.quests = gameData.quests.filter(x => x.id != id);
-        cloud.push();
-        renderQuestList();
-        newQuestForm();
-    }
-}
-
-// ============================================================
-// GESTION DES PARTICIPANTS (MODALE)
-// ============================================================
+// --- PARTICIPANTS ---
 function openParticipantModal(context) {
     currentParticipantContext = context;
     const list = document.getElementById('participantListCheckboxes');
@@ -534,188 +618,139 @@ function renderPreview(containerId, ids) {
     });
 }
 
-
-// ============================================================
-// GESTION DES CARTES (DECK & CUSTOM)
-// ============================================================
-function renderCurrentDeck(divId) {
-    const c = document.getElementById(divId); c.innerHTML = "";
-    currentDeck.forEach((cid, idx) => {
-        const card = gameData.cards.find(x => x.id === cid) || { name: '?', img: '' };
-        // Tooltip
-        const tooltip = `
-            <div class="card-tooltip">
-                <div class="tooltip-header">${card.name}</div>
-                <div class="tooltip-stats"><span>💧 ${card.elixir}</span></div>
-                <div class="tooltip-desc">${card.desc || ""}</div>
-            </div>`;
-            
-        c.innerHTML += `
-            <div class="cr-card-mini" style="overflow:visible;">
-                <img src="${card.img}">
-                <div class="remove-card-btn" onclick="removeCard(${idx},'${divId}')">x</div>
-                ${tooltip}
-            </div>`;
-    });
-}
-
-function removeCard(idx, divId) {
-    currentDeck.splice(idx, 1);
-    renderCurrentDeck(divId);
-}
-
-function openCardSelectionModal(type) {
-    editingType = type;
-    const g = document.getElementById('cardsGrid');
-    g.innerHTML = "";
-    gameData.cards.forEach(c => {
-        g.innerHTML += `
-            <div class="grid-card">
-                <img src="${c.img}" onclick="addCard('${c.id}')">
-                <button class="card-edit-btn" onclick="editCustomCard('${c.id}')">✏️</button>
-                <br><small>${c.name}</small>
-            </div>`;
-    });
-    document.getElementById('cardSelectionModal').style.display = 'flex';
-}
-
-function addCard(id) {
-    currentDeck.push(id);
-    renderCurrentDeck(editingType === 'player' ? 'pDeckContainer' : 'nDeckContainer');
-    document.getElementById('cardSelectionModal').style.display = 'none';
-}
-
-// Creation/Edition
-function newCustomCard() {
-    document.getElementById('ccId').value = "";
-    ['ccName','ccImg','ccElixir','ccDesc'].forEach(i => document.getElementById(i).value = "");
-    document.getElementById('btnDeleteCard').style.display = 'none';
-    document.getElementById('createCardModal').style.display = 'flex';
-}
-
-function editCustomCard(id) {
-    const c = gameData.cards.find(x => x.id === id);
+// --- QUETES ---
+function renderQuestList() {
+    const c = document.getElementById('questListContainer');
     if(!c) return;
-    document.getElementById('ccId').value = c.id;
-    document.getElementById('ccName').value = c.name;
-    document.getElementById('ccImg').value = c.img;
-    document.getElementById('ccElixir').value = c.elixir;
-    document.getElementById('ccDesc').value = c.desc || "";
-    document.getElementById('btnDeleteCard').style.display = 'block';
-    document.getElementById('createCardModal').style.display = 'flex';
-}
-
-function saveCustomCard() {
-    const id = document.getElementById('ccId').value;
-    const name = document.getElementById('ccName').value;
-    if(!name) return alert("Nom requis");
-    
-    const card = {
-        id: id || 'cust-'+Date.now(),
-        name: name,
-        img: document.getElementById('ccImg').value,
-        elixir: document.getElementById('ccElixir').value,
-        desc: document.getElementById('ccDesc').value,
-        type: document.getElementById('ccType').value
-    };
-    
-    if(id) {
-        const i = gameData.cards.findIndex(x => x.id === id);
-        if(i>=0) gameData.cards[i] = card;
-    } else {
-        gameData.cards.push(card);
-    }
-    cloud.push();
-    document.getElementById('createCardModal').style.display = 'none';
-    openCardSelectionModal(editingType);
-}
-
-function deleteCustomCard() {
-    if(!confirm("Supprimer ?")) return;
-    const id = document.getElementById('ccId').value;
-    gameData.cards = gameData.cards.filter(x => x.id !== id);
-    cloud.push();
-    document.getElementById('createCardModal').style.display = 'none';
-    openCardSelectionModal(editingType);
-}
-
-// --- RELATIONS ---
-function renderRelationSubjects() {
-    const c = document.getElementById('relSubjectList');
     c.innerHTML = "";
-    selectedRelationSubject = null;
-    document.getElementById('relTitle').innerText = "Sélectionnez...";
-    document.getElementById('relContainer').innerHTML = "";
-    
-    [...gameData.players, ...gameData.npcs].forEach(e => {
+    (gameData.quests || []).forEach(q => {
+        let color = '#fff';
+        if(q.status === 'Terminée') color = '#2ecc71';
+        else if(q.status === 'Échouée') color = '#e74c3c';
+        
         const div = document.createElement('div');
         div.className = 'list-card-item';
-        div.onclick = () => loadRelationsFor(e.id, e.name);
-        div.innerHTML = `<b>${e.name}</b>`;
+        div.onclick = () => loadQuest(q.id);
+        div.innerHTML = `
+            <div style="width:100%">
+                <div style="display:flex; justify-content:space-between;">
+                    <b>${q.title}</b>
+                    <span style="font-size:0.8em; color:${color}">${q.status}</span>
+                </div>
+                <div style="font-size:0.8em; color:#aaa;">Donneur: ${getGiverName(q.giver)}</div>
+            </div>`;
         c.appendChild(div);
     });
 }
 
-function loadRelationsFor(id, name) {
-    selectedRelationSubject = id;
-    document.getElementById('relTitle').innerText = "Relations de " + name;
-    const c = document.getElementById('relContainer');
-    c.innerHTML = "";
-    
-    [...gameData.players, ...gameData.npcs].forEach(t => {
-        if (t.id == id) return;
-        const r = gameData.relations.find(x => x.from == id && x.to == t.id) || { status: 'Inconnu', note: '' };
-        const statusCss = r.status.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Enlève les accents pour le CSS
+function getGiverName(id) {
+    const npc = (gameData.npcs || []).find(n => n.id == id);
+    return npc ? npc.name : "Inconnu/Autre";
+}
 
-        c.innerHTML += `
-            <div class="relation-target" id="rel-row-${t.id}">
-                <div class="rel-status-bar status-${statusCss}"></div>
-                <b>${t.name}</b>
-                <select onchange="updateRelWithVisual(${id},${t.id},'status',this)">
-                    <option value="Inconnu" ${r.status=='Inconnu'?'selected':''}>Inconnu</option>
-                    <option value="Amical" ${r.status=='Amical'?'selected':''}>Amical</option>
-                    <option value="Neutre" ${r.status=='Neutre'?'selected':''}>Neutre</option>
-                    <option value="Hostile" ${r.status=='Hostile'?'selected':''}>Hostile</option>
-                    <option value="Allié" ${r.status=='Allié'?'selected':''}>Allié</option>
-                </select>
-                <input type="text" value="${r.note}" placeholder="Notes..." onchange="updateRel(${id},${t.id},'note',this.value)">
-            </div>`;
+function updateGiverSelect(selectedId = "") {
+    const sel = document.getElementById('qGiver');
+    if(!sel) return;
+    sel.innerHTML = '<option value="">-- Inconnu / Panneau --</option>';
+    (gameData.npcs || []).forEach(n => {
+        const selected = n.id == selectedId ? 'selected' : '';
+        sel.innerHTML += `<option value="${n.id}" ${selected}>${n.name} (${n.type})</option>`;
     });
 }
 
-function updateRelWithVisual(from, to, field, selectElement) {
-    const val = selectElement.value;
-    updateRel(from, to, field, val);
-    const row = document.getElementById(`rel-row-${to}`);
-    const bar = row.querySelector('.rel-status-bar');
-    if(bar) {
-        const statusCss = val.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        bar.className = `rel-status-bar status-${statusCss}`;
+function newQuestForm() {
+    if(document.getElementById('qId')) document.getElementById('qId').value = "";
+    if(document.getElementById('qTitle')) document.getElementById('qTitle').value = "";
+    if(document.getElementById('qDesc')) document.getElementById('qDesc').value = "";
+    if(document.getElementById('qRewards')) document.getElementById('qRewards').value = "";
+    if(document.getElementById('qStatus')) document.getElementById('qStatus').value = "En cours";
+    updateGiverSelect();
+    if(document.getElementById('qParticipantsData')) {
+        document.getElementById('qParticipantsData').value = "[]";
+        renderPreview('qParticipantsPreview', []);
     }
 }
 
-function updateRel(from, to, field, val) {
-    let r = gameData.relations.find(x => x.from == from && x.to == to);
-    if (!r) {
-        r = { from: from, to: to, status: 'Inconnu', note: '' };
-        gameData.relations.push(r);
+function loadQuest(id) {
+    const q = gameData.quests.find(x => x.id == id);
+    if(!q) return;
+    document.getElementById('qId').value = q.id;
+    document.getElementById('qTitle').value = q.title;
+    document.getElementById('qDesc').value = q.desc;
+    document.getElementById('qRewards').value = q.rewards;
+    document.getElementById('qStatus').value = q.status;
+    updateGiverSelect(q.giver);
+    const assigned = q.assignedTo || [];
+    document.getElementById('qParticipantsData').value = JSON.stringify(assigned);
+    renderPreview('qParticipantsPreview', assigned);
+}
+
+function saveQuest() {
+    const id = document.getElementById('qId').value;
+    const rawAssigned = document.getElementById('qParticipantsData').value;
+    const assigned = rawAssigned ? JSON.parse(rawAssigned) : [];
+    const q = {
+        id: id ? parseInt(id) : Date.now(),
+        title: document.getElementById('qTitle').value || "Nouvelle Quête",
+        giver: document.getElementById('qGiver').value,
+        status: document.getElementById('qStatus').value,
+        desc: document.getElementById('qDesc').value,
+        rewards: document.getElementById('qRewards').value,
+        assignedTo: assigned
+    };
+    gameData.quests = gameData.quests || [];
+    const idx = gameData.quests.findIndex(x => x.id == q.id);
+    if(idx >= 0) gameData.quests[idx] = q;
+    else {
+        gameData.quests.push(q);
+        ui.addLog("Nouvelle quête : " + q.title);
     }
-    r[field] = val;
     cloud.push();
+    renderQuestList();
 }
 
-// --- UTILS ---
-function genQR(id) {
-    const u = localStorage.getItem('sb_url');
-    const k = localStorage.getItem('sb_key');
-    if (!u) return alert("Config requise");
-    const link = `${window.location.href.split('?')[0]}?mode=client&s=${gameData.sessionId}&id=${id}&u=${encodeURIComponent(btoa(u))}&k=${encodeURIComponent(btoa(k))}`;
-    document.getElementById('qrcode').innerHTML = "";
-    new QRCode(document.getElementById("qrcode"), { text: link, width: 200, height: 200 });
-    document.getElementById('qrModal').style.display = 'flex';
+function deleteQuest() {
+    const id = document.getElementById('qId').value;
+    if(id && confirm("Supprimer cette quête ?")) {
+        gameData.quests = gameData.quests.filter(x => x.id != id);
+        cloud.push();
+        renderQuestList();
+        newQuestForm();
+    }
 }
 
-// --- MAP MANAGER ---
+function renderMobileQuests(playerId) {
+    const c = document.getElementById('mobQuestList');
+    if(!c) return;
+    c.innerHTML = "";
+    const myQuests = (gameData.quests || []).filter(q => 
+        (q.assignedTo || []).includes(playerId) && q.status !== 'Cachée'
+    );
+    if(myQuests.length === 0) {
+        c.innerHTML = "<div style='text-align:center; color:#888; margin-top:20px;'>Aucune quête active.</div>";
+        return;
+    }
+    myQuests.forEach(q => {
+        let icon = "⚔️";
+        let styleClass = "";
+        if(q.status === 'Terminée') { icon = "✅"; styleClass="opacity:0.7;"; }
+        if(q.status === 'Échouée') { icon = "❌"; styleClass="opacity:0.7;"; }
+        c.innerHTML += `
+        <div class="mob-card" style="text-align:left; ${styleClass}">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px solid #ccc; padding-bottom:5px;">
+                <b style="color:var(--accent); font-size:1.1em;">${icon} ${q.title}</b>
+                <span style="font-size:0.8em; background:#333; color:white; padding:2px 6px; border-radius:4px;">${q.status}</span>
+            </div>
+            <div style="font-size:0.9em; color:#333; font-style:italic; margin-bottom:10px;">${q.desc}</div>
+            <div style="font-size:0.8em; display:flex; justify-content:space-between;">
+                <span>👤 ${getGiverName(q.giver)}</span>
+                <span style="color:#e67e22; font-weight:bold;">🎁 ${q.rewards || "???"}</span>
+            </div>
+        </div>`;
+    });
+}
+
+// --- MAP (Suite) ---
 const mapManager = {
     renderList: () => {
         const c = document.getElementById('mapListContainer'); if(!c) return; c.innerHTML = "";
@@ -758,28 +793,79 @@ const mapManager = {
     }
 };
 
-// --- VISUAL EFFECT ---
+// --- UTILS ---
+function renderLogs() { 
+    const c=document.getElementById('logOutput'); c.innerHTML=""; 
+    (gameData.logs||[]).slice().forEach(l=>{c.innerHTML+=`<div class="log-entry"><span class="log-time">[${l.t}]</span> ${l.m}</div>`;}); 
+}
+function addManualLog() { 
+    const i=document.getElementById('customLogInput'); 
+    if(i.value){ui.addLog(i.value); i.value=""; cloud.push(); refreshGameData();} 
+}
+function clearLogs() { if(confirm('Vider ?')){gameData.logs=[]; cloud.push(); refreshGameData();} }
+function genQR(id) { 
+    const u=localStorage.getItem('sb_url'), k=localStorage.getItem('sb_key'); 
+    if(!u) return alert("Config requise"); 
+    const l=`${window.location.href.split('?')[0]}?mode=client&s=${gameData.sessionId}&id=${id}&u=${encodeURIComponent(btoa(u))}&k=${encodeURIComponent(btoa(k))}`; 
+    document.getElementById('qrcode').innerHTML=""; 
+    new QRCode(document.getElementById("qrcode"),{text:l,width:200,height:200}); 
+    document.getElementById('qrModal').style.display='flex'; 
+}
+function loadGmChat(id, name) { currentGmChannel = id; document.getElementById('gmChatTitle').innerText = name || "Global (Public)"; refreshGameData(); }
+function sendChatMessage(source) {
+    let text, fromId, toId, senderName;
+    if(source === 'mobile') {
+        text = document.getElementById('mobChatInput').value;
+        const params = new URLSearchParams(window.location.search); fromId = parseInt(params.get('id'));
+        const p = gameData.players.find(x => x.id === fromId);
+        if(!p || !text) return;
+        senderName = p.name; toId = document.getElementById('mobChatTarget').value;
+        document.getElementById('mobChatInput').value = "";
+    } else {
+        text = document.getElementById('gmChatInput').value; if(!text) return;
+        fromId = 'gm'; senderName = 'MJ'; toId = currentGmChannel === 'global' ? 'global' : parseInt(currentGmChannel);
+        document.getElementById('gmChatInput').value = "";
+    }
+    gameData.chat.push({ id: Date.now(), from: fromId, to: toId, name: senderName, text: text, time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}) });
+    if(gameData.chat.length > 100) gameData.chat.shift(); cloud.push(); refreshGameData();
+}
+function renderChat(containerId, viewerId) {
+    const c = document.getElementById(containerId); c.innerHTML = "";
+    const isGm = viewerId === 'gm'; const filterId = isGm ? currentGmChannel : viewerId;
+    gameData.chat.forEach(msg => {
+        let show = false, isPrivate = false;
+        if(isGm) {
+            if(filterId === 'global') { if(msg.to === 'global') show = true; }
+            else { const tId = parseInt(filterId); if(msg.from === tId || msg.to === tId) { show = true; if(msg.to !== 'global') isPrivate = true; } }
+        } else {
+            if(msg.to === 'global') show = true; else if(msg.from === viewerId || msg.to == viewerId) { show = true; isPrivate = true; }
+        }
+        if(show) {
+            const isMe = msg.from === viewerId; const align = isMe ? 'right' : 'left';
+            let content = ``;
+            if(isPrivate) {
+                let label = "Privé";
+                if(isGm && msg.to !== 'gm' && msg.from !== 'gm' && msg.from !== parseInt(filterId)) { const t = gameData.players.find(x=>x.id==msg.to); label = `à ${t?t.name:'?'}`; }
+                content += `<span class="private-tag">🔒 ${label}</span>`;
+            }
+            content += `<b>${msg.name}</b><br>${msg.text}<div class="msg-meta">${msg.time}</div>`;
+            c.innerHTML += `<div class="msg-bubble ${align} ${isPrivate?'private':''}">${content}</div>`;
+        }
+    });
+    c.scrollTop = c.scrollHeight;
+}
 function playClashCardEffect(cardId) {
     const card = gameData.cards.find(c => c.id === cardId);
     const imgUrl = card ? card.img : 'https://via.placeholder.com/150?text=Carte';
     const cardName = card ? card.name : 'Nouvel Objet';
-
-    const overlay = document.createElement('div');
-    overlay.id = 'cr-overlay';
-    overlay.onclick = function() { document.body.removeChild(overlay); };
-
-    overlay.innerHTML = `
-        <div class="cr-effect-container">
-            <div class="cr-title-pop">NOUVELLE CARTE !</div>
-            <div class="cr-burst"></div>
-            <img src="${imgUrl}" class="cr-new-card-pop">
-            <div class="cr-name-pop">${cardName}</div>
-        </div>
-    `;
+    const overlay = document.createElement('div'); overlay.id = 'cr-overlay'; overlay.onclick = function() { document.body.removeChild(overlay); };
+    overlay.innerHTML = `<div class="cr-effect-container"><div class="cr-title-pop">NOUVELLE CARTE !</div><div class="cr-burst"></div><img src="${imgUrl}" class="cr-new-card-pop"><div class="cr-name-pop">${cardName}</div></div>`;
     document.body.appendChild(overlay);
     setTimeout(() => { if (document.body.contains(overlay)) document.body.removeChild(overlay); }, 4000);
 }
 
-// --- INITIALISATION ---
-client.check();
-setTimeout(() => { if(typeof initMapInteraction === 'function') initMapInteraction(); }, 1000);
+// --- INIT ---
+if(typeof client !== 'undefined') {
+    client.check();
+    setTimeout(() => { if(typeof initMapInteraction === 'function') initMapInteraction(); }, 1000);
+}
