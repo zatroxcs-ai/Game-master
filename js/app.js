@@ -1,5 +1,5 @@
 // ============================================================
-// FICHIER : js/app.js (VERSION V21 - DEBUGGED)
+// FICHIER : js/app.js (VERSION V22 - FINAL FIX)
 // ============================================================
 
 // --- VARIABLES GLOBALES ---
@@ -13,6 +13,7 @@ let currentParticipantContext = '';
 
 // --- FONCTION PRINCIPALE DE RAFRAICHISSEMENT ---
 function refreshGameData() {
+    // Sécurisation des données
     gameData.players = gameData.players || [];
     gameData.npcs = gameData.npcs || [];
     gameData.logs = gameData.logs || [];
@@ -22,8 +23,15 @@ function refreshGameData() {
     gameData.quests = gameData.quests || [];
     gameData.maps = gameData.maps || [{ id: 'root', name: 'Monde Principal', img: 'map.png' }];
 
+    // Mise à jour Carte
     if(typeof mapManager !== 'undefined') mapManager.renderList();
-    renderMapPins();
+    
+    // C'est ici que ça plantait : on vérifie que la fonction existe avant de l'appeler
+    if(typeof renderMapPins === 'function') {
+        renderMapPins();
+    } else {
+        console.error("ERREUR CRITIQUE : renderMapPins n'est pas chargée !");
+    }
 
     const params = new URLSearchParams(window.location.search);
     if(params.get('mode') === 'client') {
@@ -118,7 +126,6 @@ const client = {
             document.getElementById('mobElixir').innerText = p.elixir;
             document.getElementById('mobInv').innerText = p.inv || "";
 
-            // Auto-détection Carte
             const currentDeck = p.deck || [];
             if (client.lastDeckState !== null) {
                 const newCards = currentDeck.filter(cid => !client.lastDeckState.includes(cid));
@@ -126,7 +133,6 @@ const client = {
             }
             client.lastDeckState = [...currentDeck];
 
-            // Deck Display
             const md = document.getElementById('mobDeckDisplay');
             if(md) {
                 md.innerHTML = "";
@@ -138,7 +144,6 @@ const client = {
                 } else md.innerHTML = "<small style='color:#555'>Aucune carte</small>";
             }
             
-            // Chat
             const sel = document.getElementById('mobChatTarget');
             if(sel) {
                 const curr = sel.value;
@@ -148,7 +153,6 @@ const client = {
             }
             renderChat('mobChatFeed', id);
 
-            // Journal
             const jCont = document.getElementById('mobJournalList');
             if(jCont) {
                 jCont.innerHTML = "";
@@ -161,8 +165,7 @@ const client = {
                         </div>`;
                 });
             }
-
-            // Quêtes Mobile (Fonction restaurée)
+            
             if(typeof renderMobileQuests === 'function') renderMobileQuests(id);
         }
     },
@@ -201,6 +204,55 @@ function switchTab(t){
 function saveData(notify = false) {
     if (notify && ui.addLog) ui.addLog("Sauvegarde manuelle.");
     if(typeof cloud !== 'undefined') cloud.push();
+}
+
+// ============================================================
+// GESTION CARTE & PIONS (C'est ici que ça manquait !)
+// ============================================================
+
+function toggleMapMarkers() {
+    showMarkers = !showMarkers;
+    // On peut ajouter un log ou changer le texte du bouton si on veut
+    renderMapPins();
+}
+
+function renderMapPins() {
+    // 1. Nettoyage
+    document.querySelectorAll('.map-marker').forEach(e => e.remove());
+
+    // 2. Vérif affichage
+    if(!showMarkers) return;
+
+    // 3. Rendu
+    const containers = [
+        document.querySelector('#gmMapContainer'), 
+        document.querySelector('#mob-map .full-map-container')
+    ];
+
+    containers.forEach(c => {
+        if (c) {
+            gameData.players.forEach(p => {
+                const pMap = p.mapId || 'root';
+                if (p.mapX && p.mapY && pMap === gameData.activeMapId) {
+                    const d = document.createElement('div'); 
+                    d.className = 'map-marker';
+                    d.style.left = p.mapX + '%'; 
+                    d.style.top = p.mapY + '%';
+                    d.style.backgroundImage = `url('${p.img || "https://via.placeholder.com/50"}')`;
+                    d.innerHTML = `<div class="tooltip">${p.name}</div>`;
+                    
+                    if (document.getElementById('gm-view').style.display !== 'none') {
+                        d.onclick = (e) => { 
+                            e.stopPropagation(); 
+                            switchTab('view-players'); 
+                            loadPlayer(p.id); 
+                        };
+                    }
+                    c.appendChild(d);
+                }
+            });
+        }
+    });
 }
 
 // --- PLAYERS ---
@@ -493,379 +545,4 @@ function updateRel(from, to, field, val) {
         gameData.relations.push(r);
     }
     r[field] = val;
-    cloud.push();
-}
-
-// --- JOURNAL ---
-function renderJournalList() {
-    const c = document.getElementById('journalListContainer');
-    if(!c) return;
-    c.innerHTML = "";
-    (gameData.journal || []).sort((a, b) => b.id - a.id).forEach(j => {
-        const div = document.createElement('div');
-        div.className = 'list-card-item';
-        div.onclick = () => loadJournal(j.id);
-        div.innerHTML = `<div class="journal-date" style="font-size:0.8em;color:#aaa">${j.date}</div><b style="margin-left:5px">${j.title}</b>`;
-        c.appendChild(div);
-    });
-}
-
-function loadJournal(id) {
-    const j = gameData.journal.find(x => x.id == id);
-    if(!j) return;
-    document.getElementById('jId').value = j.id;
-    document.getElementById('jTitle').value = j.title;
-    document.getElementById('jDate').value = j.date;
-    document.getElementById('jContent').value = j.content;
-    
-    const parts = j.parts || [];
-    if(document.getElementById('jParticipantsData')) {
-        document.getElementById('jParticipantsData').value = JSON.stringify(parts);
-        renderPreview('jParticipantsPreview', parts);
-    }
-}
-
-function newJournalForm() {
-    ['jId', 'jTitle', 'jDate', 'jContent'].forEach(i => document.getElementById(i).value = "");
-    if(document.getElementById('jParticipantsData')) {
-        document.getElementById('jParticipantsData').value = "[]";
-        renderPreview('jParticipantsPreview', []);
-    }
-}
-
-function saveJournal() {
-    const id = document.getElementById('jId').value;
-    const rawParts = document.getElementById('jParticipantsData').value;
-    const parts = rawParts ? JSON.parse(rawParts) : [];
-    
-    const j = {
-        id: id ? parseInt(id) : Date.now(),
-        title: document.getElementById('jTitle').value,
-        date: document.getElementById('jDate').value,
-        content: document.getElementById('jContent').value,
-        parts: parts
-    };
-    
-    const i = gameData.journal.findIndex(x => x.id == j.id);
-    if (i >= 0) gameData.journal[i] = j;
-    else gameData.journal.push(j);
-    
-    cloud.push();
-    renderJournalList();
-}
-
-// --- PARTICIPANTS ---
-function openParticipantModal(context) {
-    currentParticipantContext = context;
-    const list = document.getElementById('participantListCheckboxes');
-    list.innerHTML = "";
-
-    const inputId = context === 'journal' ? 'jParticipantsData' : 'qParticipantsData';
-    const rawVal = document.getElementById(inputId).value;
-    let selectedIds = [];
-    try { selectedIds = JSON.parse(rawVal); } catch(e) { selectedIds = []; }
-
-    const allActors = [...(gameData.players || []), ...(gameData.npcs || [])];
-
-    allActors.forEach(p => {
-        const isChecked = selectedIds.includes(p.id) ? 'checked' : '';
-        list.innerHTML += `
-            <label style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; display:flex; align-items:center; cursor:pointer; border:1px solid #555; margin-bottom:5px;">
-                <input type="checkbox" value="${p.id}" ${isChecked} style="width:auto; margin:0 10px 0 0;">
-                <img src="${p.img || 'https://via.placeholder.com/30'}" style="width:30px; height:30px; border-radius:50%; margin-right:10px; object-fit:cover;">
-                <span style="font-weight:bold; color:white;">${p.name}</span>
-                <small style="margin-left:auto; color:#aaa;">${p.type || 'Joueur'}</small>
-            </label>`;
-    });
-
-    document.getElementById('participantModal').style.display = 'flex';
-}
-
-function confirmParticipants() {
-    const checkboxes = document.querySelectorAll('#participantListCheckboxes input:checked');
-    const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
-
-    if (currentParticipantContext === 'journal') {
-        document.getElementById('jParticipantsData').value = JSON.stringify(selectedIds);
-        renderPreview('jParticipantsPreview', selectedIds);
-    } else {
-        document.getElementById('qParticipantsData').value = JSON.stringify(selectedIds);
-        renderPreview('qParticipantsPreview', selectedIds);
-    }
-    document.getElementById('participantModal').style.display = 'none';
-}
-
-function renderPreview(containerId, ids) {
-    const c = document.getElementById(containerId);
-    if(!c) return;
-    c.innerHTML = "";
-    
-    if(!ids || ids.length === 0) {
-        c.innerHTML = "<small style='color:#666; font-style:italic;'>Aucun</small>";
-        return;
-    }
-
-    const allActors = [...(gameData.players || []), ...(gameData.npcs || [])];
-    ids.forEach(id => {
-        const actor = allActors.find(a => a.id === id);
-        if (actor) {
-            c.innerHTML += `
-                <div class="participant-badge" style="background:#2c3e50; border:1px solid #4a86c7; color:white; padding:2px 8px; border-radius:12px; font-size:0.85em; display:flex; align-items:center; gap:5px; margin-right:5px; margin-bottom:5px;">
-                    <img src="${actor.img}" style="width:20px; height:20px; border-radius:50%;"> 
-                    ${actor.name}
-                </div>`;
-        }
-    });
-}
-
-// --- QUETES ---
-function renderQuestList() {
-    const c = document.getElementById('questListContainer');
-    if(!c) return;
-    c.innerHTML = "";
-    (gameData.quests || []).forEach(q => {
-        let color = '#fff';
-        if(q.status === 'Terminée') color = '#2ecc71';
-        else if(q.status === 'Échouée') color = '#e74c3c';
-        
-        const div = document.createElement('div');
-        div.className = 'list-card-item';
-        div.onclick = () => loadQuest(q.id);
-        div.innerHTML = `
-            <div style="width:100%">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>${q.title}</b>
-                    <span style="font-size:0.8em; color:${color}">${q.status}</span>
-                </div>
-                <div style="font-size:0.8em; color:#aaa;">Donneur: ${getGiverName(q.giver)}</div>
-            </div>`;
-        c.appendChild(div);
-    });
-}
-
-function getGiverName(id) {
-    const npc = (gameData.npcs || []).find(n => n.id == id);
-    return npc ? npc.name : "Inconnu/Autre";
-}
-
-function updateGiverSelect(selectedId = "") {
-    const sel = document.getElementById('qGiver');
-    if(!sel) return;
-    sel.innerHTML = '<option value="">-- Inconnu / Panneau --</option>';
-    (gameData.npcs || []).forEach(n => {
-        const selected = n.id == selectedId ? 'selected' : '';
-        sel.innerHTML += `<option value="${n.id}" ${selected}>${n.name} (${n.type})</option>`;
-    });
-}
-
-function newQuestForm() {
-    if(document.getElementById('qId')) document.getElementById('qId').value = "";
-    if(document.getElementById('qTitle')) document.getElementById('qTitle').value = "";
-    if(document.getElementById('qDesc')) document.getElementById('qDesc').value = "";
-    if(document.getElementById('qRewards')) document.getElementById('qRewards').value = "";
-    if(document.getElementById('qStatus')) document.getElementById('qStatus').value = "En cours";
-    updateGiverSelect();
-    if(document.getElementById('qParticipantsData')) {
-        document.getElementById('qParticipantsData').value = "[]";
-        renderPreview('qParticipantsPreview', []);
-    }
-}
-
-function loadQuest(id) {
-    const q = gameData.quests.find(x => x.id == id);
-    if(!q) return;
-    document.getElementById('qId').value = q.id;
-    document.getElementById('qTitle').value = q.title;
-    document.getElementById('qDesc').value = q.desc;
-    document.getElementById('qRewards').value = q.rewards;
-    document.getElementById('qStatus').value = q.status;
-    updateGiverSelect(q.giver);
-    const assigned = q.assignedTo || [];
-    document.getElementById('qParticipantsData').value = JSON.stringify(assigned);
-    renderPreview('qParticipantsPreview', assigned);
-}
-
-function saveQuest() {
-    const id = document.getElementById('qId').value;
-    const rawAssigned = document.getElementById('qParticipantsData').value;
-    const assigned = rawAssigned ? JSON.parse(rawAssigned) : [];
-    const q = {
-        id: id ? parseInt(id) : Date.now(),
-        title: document.getElementById('qTitle').value || "Nouvelle Quête",
-        giver: document.getElementById('qGiver').value,
-        status: document.getElementById('qStatus').value,
-        desc: document.getElementById('qDesc').value,
-        rewards: document.getElementById('qRewards').value,
-        assignedTo: assigned
-    };
-    gameData.quests = gameData.quests || [];
-    const idx = gameData.quests.findIndex(x => x.id == q.id);
-    if(idx >= 0) gameData.quests[idx] = q;
-    else {
-        gameData.quests.push(q);
-        ui.addLog("Nouvelle quête : " + q.title);
-    }
-    cloud.push();
-    renderQuestList();
-}
-
-function deleteQuest() {
-    const id = document.getElementById('qId').value;
-    if(id && confirm("Supprimer cette quête ?")) {
-        gameData.quests = gameData.quests.filter(x => x.id != id);
-        cloud.push();
-        renderQuestList();
-        newQuestForm();
-    }
-}
-
-function renderMobileQuests(playerId) {
-    const c = document.getElementById('mobQuestList');
-    if(!c) return;
-    c.innerHTML = "";
-    const myQuests = (gameData.quests || []).filter(q => 
-        (q.assignedTo || []).includes(playerId) && q.status !== 'Cachée'
-    );
-    if(myQuests.length === 0) {
-        c.innerHTML = "<div style='text-align:center; color:#888; margin-top:20px;'>Aucune quête active.</div>";
-        return;
-    }
-    myQuests.forEach(q => {
-        let icon = "⚔️";
-        let styleClass = "";
-        if(q.status === 'Terminée') { icon = "✅"; styleClass="opacity:0.7;"; }
-        if(q.status === 'Échouée') { icon = "❌"; styleClass="opacity:0.7;"; }
-        c.innerHTML += `
-        <div class="mob-card" style="text-align:left; ${styleClass}">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px solid #ccc; padding-bottom:5px;">
-                <b style="color:var(--accent); font-size:1.1em;">${icon} ${q.title}</b>
-                <span style="font-size:0.8em; background:#333; color:white; padding:2px 6px; border-radius:4px;">${q.status}</span>
-            </div>
-            <div style="font-size:0.9em; color:#333; font-style:italic; margin-bottom:10px;">${q.desc}</div>
-            <div style="font-size:0.8em; display:flex; justify-content:space-between;">
-                <span>👤 ${getGiverName(q.giver)}</span>
-                <span style="color:#e67e22; font-weight:bold;">🎁 ${q.rewards || "???"}</span>
-            </div>
-        </div>`;
-    });
-}
-
-// --- MAP (Suite) ---
-const mapManager = {
-    renderList: () => {
-        const c = document.getElementById('mapListContainer'); if(!c) return; c.innerHTML = "";
-        gameData.maps = gameData.maps || [{ id: 'root', name: 'Monde Principal', img: 'map.png' }];
-        const current = gameData.maps.find(x => x.id === gameData.activeMapId) || gameData.maps[0];
-        
-        gameData.maps.forEach(m => {
-            const div = document.createElement('div');
-            div.className = `map-item ${gameData.activeMapId === m.id ? 'active' : ''}`;
-            div.innerHTML = `🗺️ <b>${m.name}</b>`; 
-            div.onclick = () => mapManager.switchMap(m.id);
-            c.appendChild(div);
-        });
-
-        const imgDesktop = document.getElementById('worldMapImg');
-        const imgMobile = document.querySelector('#mob-map .world-map');
-        const label = document.getElementById('currentMapLabel');
-
-        if(imgDesktop) imgDesktop.src = current.img;
-        if(imgMobile) imgMobile.src = current.img;
-        if(label) label.innerText = current.name;
-        
-        const inputUrl = document.getElementById('editMapUrl');
-        if(inputUrl && document.activeElement !== inputUrl) inputUrl.value = current.img;
-    },
-    switchMap: (id) => { gameData.activeMapId = id; cloud.push(); refreshGameData(); },
-    addMap: () => {
-        const name = document.getElementById('newMapName').value;
-        if(name) {
-            const id = 'map-' + Date.now();
-            gameData.maps.push({ id: id, name: name, img: 'map.png' });
-            document.getElementById('newMapName').value = "";
-            mapManager.switchMap(id);
-        }
-    },
-    updateUrl: () => {
-        const url = document.getElementById('editMapUrl').value;
-        const current = gameData.maps.find(x => x.id === gameData.activeMapId);
-        if(current && url) { current.img = url; cloud.push(); refreshGameData(); }
-    }
-};
-
-// --- UTILS ---
-function renderLogs() { 
-    const c=document.getElementById('logOutput'); c.innerHTML=""; 
-    (gameData.logs||[]).slice().forEach(l=>{c.innerHTML+=`<div class="log-entry"><span class="log-time">[${l.t}]</span> ${l.m}</div>`;}); 
-}
-function addManualLog() { 
-    const i=document.getElementById('customLogInput'); 
-    if(i.value){ui.addLog(i.value); i.value=""; cloud.push(); refreshGameData();} 
-}
-function clearLogs() { if(confirm('Vider ?')){gameData.logs=[]; cloud.push(); refreshGameData();} }
-function genQR(id) { 
-    const u=localStorage.getItem('sb_url'), k=localStorage.getItem('sb_key'); 
-    if(!u) return alert("Config requise"); 
-    const l=`${window.location.href.split('?')[0]}?mode=client&s=${gameData.sessionId}&id=${id}&u=${encodeURIComponent(btoa(u))}&k=${encodeURIComponent(btoa(k))}`; 
-    document.getElementById('qrcode').innerHTML=""; 
-    new QRCode(document.getElementById("qrcode"),{text:l,width:200,height:200}); 
-    document.getElementById('qrModal').style.display='flex'; 
-}
-function loadGmChat(id, name) { currentGmChannel = id; document.getElementById('gmChatTitle').innerText = name || "Global (Public)"; refreshGameData(); }
-function sendChatMessage(source) {
-    let text, fromId, toId, senderName;
-    if(source === 'mobile') {
-        text = document.getElementById('mobChatInput').value;
-        const params = new URLSearchParams(window.location.search); fromId = parseInt(params.get('id'));
-        const p = gameData.players.find(x => x.id === fromId);
-        if(!p || !text) return;
-        senderName = p.name; toId = document.getElementById('mobChatTarget').value;
-        document.getElementById('mobChatInput').value = "";
-    } else {
-        text = document.getElementById('gmChatInput').value; if(!text) return;
-        fromId = 'gm'; senderName = 'MJ'; toId = currentGmChannel === 'global' ? 'global' : parseInt(currentGmChannel);
-        document.getElementById('gmChatInput').value = "";
-    }
-    gameData.chat.push({ id: Date.now(), from: fromId, to: toId, name: senderName, text: text, time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}) });
-    if(gameData.chat.length > 100) gameData.chat.shift(); cloud.push(); refreshGameData();
-}
-function renderChat(containerId, viewerId) {
-    const c = document.getElementById(containerId); c.innerHTML = "";
-    const isGm = viewerId === 'gm'; const filterId = isGm ? currentGmChannel : viewerId;
-    gameData.chat.forEach(msg => {
-        let show = false, isPrivate = false;
-        if(isGm) {
-            if(filterId === 'global') { if(msg.to === 'global') show = true; }
-            else { const tId = parseInt(filterId); if(msg.from === tId || msg.to === tId) { show = true; if(msg.to !== 'global') isPrivate = true; } }
-        } else {
-            if(msg.to === 'global') show = true; else if(msg.from === viewerId || msg.to == viewerId) { show = true; isPrivate = true; }
-        }
-        if(show) {
-            const isMe = msg.from === viewerId; const align = isMe ? 'right' : 'left';
-            let content = ``;
-            if(isPrivate) {
-                let label = "Privé";
-                if(isGm && msg.to !== 'gm' && msg.from !== 'gm' && msg.from !== parseInt(filterId)) { const t = gameData.players.find(x=>x.id==msg.to); label = `à ${t?t.name:'?'}`; }
-                content += `<span class="private-tag">🔒 ${label}</span>`;
-            }
-            content += `<b>${msg.name}</b><br>${msg.text}<div class="msg-meta">${msg.time}</div>`;
-            c.innerHTML += `<div class="msg-bubble ${align} ${isPrivate?'private':''}">${content}</div>`;
-        }
-    });
-    c.scrollTop = c.scrollHeight;
-}
-function playClashCardEffect(cardId) {
-    const card = gameData.cards.find(c => c.id === cardId);
-    const imgUrl = card ? card.img : 'https://via.placeholder.com/150?text=Carte';
-    const cardName = card ? card.name : 'Nouvel Objet';
-    const overlay = document.createElement('div'); overlay.id = 'cr-overlay'; overlay.onclick = function() { document.body.removeChild(overlay); };
-    overlay.innerHTML = `<div class="cr-effect-container"><div class="cr-title-pop">NOUVELLE CARTE !</div><div class="cr-burst"></div><img src="${imgUrl}" class="cr-new-card-pop"><div class="cr-name-pop">${cardName}</div></div>`;
-    document.body.appendChild(overlay);
-    setTimeout(() => { if (document.body.contains(overlay)) document.body.removeChild(overlay); }, 4000);
-}
-
-// --- INIT ---
-if(typeof client !== 'undefined') {
-    client.check();
-    setTimeout(() => { if(typeof initMapInteraction === 'function') initMapInteraction(); }, 1000);
-}
+    cloud.push
